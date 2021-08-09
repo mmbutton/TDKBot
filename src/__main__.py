@@ -9,7 +9,7 @@ import schedule
 # DISCORD_TOKEN = 'ODczMzEwOTY2MDgxODEwNTAz.YQ2kNw.XG3asgLg3Gh9JKQtpHxqHlest2U'
 # GENERAL_CHAT = 820733319540768780
 # TDK Tokens
-DISCORD_TOKEN = 'ODc0NDE4MTQ5MDYyMjI1OTky.YRGrXA.70At2MzQ-KeoN4SP8RyFBHa_lx4'
+DISCORD_TOKEN = 'ODc0NDE4MTQ5MDYyMjI1OTky.YRGrXA.3AsS7YIx1C5pmbRdnDeCec2bKM0'
 GENERAL_CHAT = 820733319540768780
 KINGS_COUNCIL = 820733319540768780
 
@@ -69,7 +69,11 @@ def notifier_thread():
     if offset < 0:
         reset_time = 24 + offset
 
-    schedule.every().day.at(str(int(reset_time)) + ':25').do(boss_schedule_notifier)
+    hour = int(reset_time)
+    hour_str = '{:02d}:00'.format(hour)
+
+    print(hour_str)
+    schedule.every().day.at(hour_str).do(boss_schedule_notifier)
     schedule.every().sunday.do(switch_hamlyn_tristan_notifier)
 
     while True:
