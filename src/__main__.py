@@ -6,18 +6,30 @@ import discord
 import schedule
 
 # Dev tokens
-# DISCORD_TOKEN = 'ODczMzEwOTY2MDgxODEwNTAz.YQ2kNw.XG3asgLg3Gh9JKQtpHxqHlest2U'
-# GENERAL_CHAT = 820733319540768780
+DISCORD_TOKEN = 'ODczMzEwOTY2MDgxODEwNTAz.YQ2kNw.KYUCHU02zGxQzXd5w1kU0H1g2LQ'
+GENERAL_CHAT = 873301724281053197
+KINGS_COUNCIL = 873301724281053197
 # TDK Tokens
-DISCORD_TOKEN = 'ODc0NDE4MTQ5MDYyMjI1OTky.YRGrXA.3AsS7YIx1C5pmbRdnDeCec2bKM0'
-GENERAL_CHAT = 820733319540768780
-KINGS_COUNCIL = 820733319540768780
+#DISCORD_TOKEN = 
+#GENERAL_CHAT = 820733319540768780
+#KINGS_COUNCIL = 820733319540768780
 
 client = discord.Client()
 
 # Command list
 BOSS_SCHEDULE = '!boss_schedule'
+EVENT_SCHEDULE = '!event_schedule'
 ##############################################################################
+
+# Global strings
+BOSS_SCHEDULE_STR = '''Alliance Boss Schedule
+    Day 1- G5
+    Day 2- King/Lords/Doug
+    Day 3- Everyone Else
+    Day 4- King/Lords/Doug
+    Day 5- Everyone Else
+    Day 6- King/Lords/Doug
+    Day 7- Everyone Else'''
 
 @client.event
 async def on_ready():
@@ -31,30 +43,29 @@ async def on_message(message):
     if message.content.startswith('!help'):
         await help(message)
     if message.content.startswith(BOSS_SCHEDULE):
-        await message.channel.send(boss_schedule())
+        await message.channel.send(BOSS_SCHEDULE_STR)
+    if message.content.startswith(EVENT_SCHEDULE):
+        await message.channel.send(file=discord.File('resources/event_schedule.png'))
 
 async def help(message):
-    print(BOSS_SCHEDULE)
-    await message.channel.send('Prints the current member list that is allowed to kill bosses')
-
-def boss_schedule(everyone=False):
-    time = datetime.now(tz=timezone.utc)
-    day = time.weekday()
-
-    message = 'Today\'s boss schedule is '
-    if everyone: 
-        message = '@everyone ' + message
+    await message.channel.send(BOSS_SCHEDULE + ' :Prints the current member list that is allowed to kill bosses')
     
-    elif day == 1 or 3 or 5:
-        return message + 'Elites & Knights'
-    elif day == 0 or 2 or 4:
-        return message + 'Kings, Lords and Doug'
-    elif day == 6:
-        return message + 'George V day'
+
     
 def boss_schedule_notifier():
     channel = client.get_channel(GENERAL_CHAT)
-    asyncio.run_coroutine_threadsafe(channel.send(boss_schedule(True)), client.loop)
+    time = datetime.now(tz=timezone.utc)
+    day = time.weekday()
+
+    message = '@everyone Today\'s boss schedule is '
+    if day == 1 or 3 or 5:
+        message + 'Elites & Knights'
+    elif day == 0 or 2 or 4:
+        message + 'Kings, Lords and Doug'
+    elif day == 6:
+        message + 'George V day'
+
+    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def switch_hamlyn_tristan_notifier():
     channel = client.get_channel(KINGS_COUNCIL)
@@ -72,7 +83,6 @@ def notifier_thread():
     hour = int(reset_time)
     hour_str = '{:02d}:00'.format(hour)
 
-    print(hour_str)
     schedule.every().day.at(hour_str).do(boss_schedule_notifier)
     schedule.every().sunday.do(switch_hamlyn_tristan_notifier)
 
