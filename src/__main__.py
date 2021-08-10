@@ -6,13 +6,13 @@ import discord
 import schedule
 
 # Dev tokens
-DISCORD_TOKEN = 'ODczMzEwOTY2MDgxODEwNTAz.YQ2kNw.KYUCHU02zGxQzXd5w1kU0H1g2LQ'
-GENERAL_CHAT = 873301724281053197
-KINGS_COUNCIL = 873301724281053197
-# TDK Tokens
 #DISCORD_TOKEN = 
-#GENERAL_CHAT = 820733319540768780
-#KINGS_COUNCIL = 820733319540768780
+#GENERAL_CHAT = 873301724281053197
+#KINGS_COUNCIL = 873301724281053197
+# TDK Tokens
+DISCORD_TOKEN = 
+GENERAL_CHAT = 820733319540768780
+KINGS_COUNCIL = 820733319540768780
 
 client = discord.Client()
 
@@ -22,14 +22,14 @@ EVENT_SCHEDULE = '!event_schedule'
 ##############################################################################
 
 # Global strings
-BOSS_SCHEDULE_STR = '''Alliance Boss Schedule
-    Day 1- G5
-    Day 2- King/Lords/Doug
-    Day 3- Everyone Else
-    Day 4- King/Lords/Doug
-    Day 5- Everyone Else
-    Day 6- King/Lords/Doug
-    Day 7- Everyone Else'''
+BOSS_SCHEDULE_STR = '''Alliance Boss Schedule (All times in UTC)
+    Sunday - G5
+    Monday - King/Lords/Doug
+    Tuesday - Everyone Else
+    Wednesday - King/Lords/Doug
+    Thursday - Everyone Else
+    Friday - King/Lords/Doug
+    Saturday - Everyone Else'''
 
 @client.event
 async def on_ready():
@@ -49,6 +49,7 @@ async def on_message(message):
 
 async def help(message):
     await message.channel.send(BOSS_SCHEDULE + ' :Prints the current member list that is allowed to kill bosses')
+    await message.channel.send(EVENT_SCHEDULE + ' :Posts an image of the event schedule for challenges and cross server events')
     
 
     
@@ -59,11 +60,11 @@ def boss_schedule_notifier():
 
     message = '@everyone Today\'s boss schedule is '
     if day == 1 or 3 or 5:
-        message + 'Elites & Knights'
+        message = message + 'Elites & Knights'
     elif day == 0 or 2 or 4:
-        message + 'Kings, Lords and Doug'
+        message = message + 'Kings, Lords and Doug'
     elif day == 6:
-        message + 'George V day'
+        message = message + 'George V day'
 
     asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
