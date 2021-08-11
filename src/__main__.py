@@ -82,19 +82,24 @@ def switch_hamlyn_tristan_notifier():
     channel = client.get_channel(int(os.getenv('KINGS_COUNCIL')))
     asyncio.run_coroutine_threadsafe(channel.send('@JyuVGrace#2224 please switch Hamlyn and Tristan'), client.loop)
 
+def jotun_notifier():
+    channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
+    asyncio.run_coroutine_threadsafe(channel.send('Jotun time @everyone '), client.loop)
+
 def notifier_thread():
+    # Get the timezone offset and figure out the offset from localtime (In a 24 hour context)
     offset = time.timezone if (time.localtime().tm_isdst == 0) else time.altzone
     offset = offset / 60 / 60 * -1
-
-    reset_time = offset
-    # If offset is negative add the negative offset to 24 to get the hour of the reset
-    if offset < 0:
-        reset_time = 24 + offset
+    reset_time = offset % 24
 
     reset_hour = int(reset_time)
     reset_hour_str = '{:02d}:01'.format(reset_hour)
-
     schedule.every().day.at(reset_hour_str).do(boss_schedule_notifier)
+
+    jotun_hour = (reset_hour -4) % 24
+    jotun_hour_str = '{:02d}:00'.format(jotun_hour)
+    schedule.every().day.at(jotun_hour_str).do(jotun_notifier)
+
     schedule.every().sunday.do(switch_hamlyn_tristan_notifier)
 
     while True:
