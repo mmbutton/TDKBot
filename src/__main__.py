@@ -44,7 +44,6 @@ async def on_message(message):
     if message.content.startswith(BOSS_SCHEDULE):
         await message.channel.send(boss_schedule())
     if message.content.startswith(EVENT_SCHEDULE):
-        
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
     
 
@@ -53,7 +52,7 @@ async def help(message):
     await message.channel.send(EVENT_SCHEDULE + ' :Posts an image of the event schedule for challenges and cross server events')
     
 def boss_schedule():
-    boss_schedule = BOSS_SCHEDULE_LIST
+    boss_schedule = BOSS_SCHEDULE_LIST.copy()
 
     time = datetime.now(tz=timezone.utc)
     day = time.weekday()
@@ -86,6 +85,10 @@ def jotun_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
     asyncio.run_coroutine_threadsafe(channel.send('Jotun time @everyone '), client.loop)
 
+def cross_server_notifier():
+    channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
+
 def notifier_thread():
     # Get the timezone offset and figure out the offset from localtime (In a 24 hour context)
     offset = time.timezone if (time.localtime().tm_isdst == 0) else time.altzone
@@ -99,6 +102,11 @@ def notifier_thread():
     jotun_hour = (reset_hour -4) % 24
     jotun_hour_str = '{:02d}:00'.format(jotun_hour)
     schedule.every().day.at(jotun_hour_str).do(jotun_notifier)
+
+    # This schedule only works for UTC - time zones. UTC plus timezones would break it and make it go off a day late
+    schedule.every().monday.at(reset_hour_str).do(cross_server_notifier)
+    schedule.every().tuesday.at(reset_hour_str).do(cross_server_notifier)
+    schedule.every().wednesday.at(reset_hour_str).do(cross_server_notifier)
 
     schedule.every().sunday.do(switch_hamlyn_tristan_notifier)
 
