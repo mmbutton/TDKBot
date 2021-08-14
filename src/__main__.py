@@ -99,14 +99,14 @@ def notifier_thread():
     reset_hour_str = '{:02d}:01'.format(reset_hour)
     schedule.every().day.at(reset_hour_str).do(boss_schedule_notifier)
 
-    jotun_hour = (reset_hour -4) % 24
+    jotun_hour = (reset_hour - 4) % 24
     jotun_hour_str = '{:02d}:00'.format(jotun_hour)
     schedule.every().day.at(jotun_hour_str).do(jotun_notifier)
 
     # This schedule only works for UTC - time zones. UTC plus timezones would break it and make it go off a day late
     schedule.every().monday.at(reset_hour_str).do(cross_server_notifier)
-    schedule.every().tuesday.at(reset_hour_str).do(cross_server_notifier)
     schedule.every().wednesday.at(reset_hour_str).do(cross_server_notifier)
+    schedule.every().friday.at(reset_hour_str).do(cross_server_notifier)
 
     schedule.every().sunday.do(switch_hamlyn_tristan_notifier)
 
