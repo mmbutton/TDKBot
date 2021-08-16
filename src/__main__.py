@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Dev tokens
-
 client = discord.Client()
 
 # Command list
@@ -18,7 +17,7 @@ BOSS_SCHEDULE = '!boss_schedule'
 EVENT_SCHEDULE = '!event_schedule'
 ##############################################################################
 
-# Global strings
+# Global variables
 BOSS_SCHEDULE_LIST = [
     'Alliance Boss Schedule (All times in UTC)',
     '  Monday - King/Lords/Doug',
@@ -29,6 +28,14 @@ BOSS_SCHEDULE_LIST = [
     '  Saturday - Everyone Else',
     '  Sunday - G5',
 ]
+
+SUNDAY = 0
+MONDAY = 1
+TUESDAY = 2
+WEDNESDAY = 3
+THURSDAY = 4
+FRIDAY = 5
+SATURDAY = 6
 
 @client.event
 async def on_ready():
@@ -61,11 +68,8 @@ def boss_schedule():
 
     return "\n".join(boss_schedule)
 
-    
-def boss_schedule_notifier():
+def boss_schedule_notifier(day):
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
-    time = datetime.now(tz=timezone.utc)
-    day = time.weekday()
 
     message = '@everyone Today\'s boss schedule is '
     if day == 1 or 3 or 5:
@@ -79,7 +83,7 @@ def boss_schedule_notifier():
 
 def switch_hamlyn_tristan_notifier():
     channel = client.get_channel(int(os.getenv('KINGS_COUNCIL')))
-    asyncio.run_coroutine_threadsafe(channel.send('@JyuVGrace#2224 please switch Hamlyn and Tristan'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@King Gobert please switch Hamlyn and Tristan'), client.loop)
 
 def jotun_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
@@ -89,6 +93,36 @@ def cross_server_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
     asyncio.run_coroutine_threadsafe(channel.send('@everyone New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
 
+# This might be an awfule way to do this but the scheduler daily run never updates after the first run.
+def sunday_notifier():
+    cross_server_notifier()
+    boss_schedule_notifier(SUNDAY + 1)
+
+def monday_notifier():
+    cross_server_notifier()
+    boss_schedule_notifier(MONDAY + 1)
+
+def tuesday_notifier():
+    cross_server_notifier()
+    boss_schedule_notifier(TUESDAY + 1)
+
+def wednesday_notifier():
+    cross_server_notifier()
+    boss_schedule_notifier(WEDNESDAY + 1)
+
+def thursday_notifier():
+    cross_server_notifier()
+    boss_schedule_notifier(THURSDAY + 1)
+
+def friday_notifier():
+    cross_server_notifier()
+    boss_schedule_notifier(FRIDAY + 1)
+
+def saturday_notifier():
+    cross_server_notifier()
+    boss_schedule_notifier((SATURDAY + 1) % 7)
+
+
 def notifier_thread():
     # Get the timezone offset and figure out the offset from localtime (In a 24 hour context)
     offset = time.timezone if (time.localtime().tm_isdst == 0) else time.altzone
@@ -96,17 +130,20 @@ def notifier_thread():
     reset_time = offset % 24
 
     reset_hour = int(reset_time)
-    reset_hour_str = '{:02d}:01'.format(reset_hour)
-    schedule.every().day.at(reset_hour_str).do(boss_schedule_notifier)
+    reset_hour_str = '{:02d}:00'.format(reset_hour)
 
     jotun_hour = (reset_hour - 4) % 24
     jotun_hour_str = '{:02d}:00'.format(jotun_hour)
     schedule.every().day.at(jotun_hour_str).do(jotun_notifier)
 
     # This schedule only works for UTC - time zones. UTC plus timezones would break it and make it go off a day late
-    schedule.every().monday.at(reset_hour_str).do(cross_server_notifier)
-    schedule.every().wednesday.at(reset_hour_str).do(cross_server_notifier)
-    schedule.every().friday.at(reset_hour_str).do(cross_server_notifier)
+    schedule.every().sunday.at(reset_hour_str).do(sunday_notifier)
+    schedule.every().monday.at(reset_hour_str).do(monday_notifier)
+    schedule.every().tuesday.at(reset_hour_str).do(tuesday_notifier)
+    schedule.every().wednesday.at(reset_hour_str).do(thursday_notifier)
+    schedule.every().thursday.at(reset_hour_str).do(friday_notifier)
+    schedule.every().friday.at(reset_hour_str).do(saturday_notifier)
+    schedule.every().saturday.at(reset_hour_str).do(sunday_notifier)
 
     schedule.every().sunday.do(switch_hamlyn_tristan_notifier)
 
