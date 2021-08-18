@@ -140,10 +140,10 @@ def notifier_thread():
     schedule.every().sunday.at(reset_hour_str).do(sunday_notifier)
     schedule.every().monday.at(reset_hour_str).do(monday_notifier)
     schedule.every().tuesday.at(reset_hour_str).do(tuesday_notifier)
-    schedule.every().wednesday.at(reset_hour_str).do(thursday_notifier)
-    schedule.every().thursday.at(reset_hour_str).do(friday_notifier)
-    schedule.every().friday.at(reset_hour_str).do(saturday_notifier)
-    schedule.every().saturday.at(reset_hour_str).do(sunday_notifier)
+    schedule.every().wednesday.at(reset_hour_str).do(wednesday_notifier)
+    schedule.every().thursday.at(reset_hour_str).do(thursday_notifier)
+    schedule.every().friday.at(reset_hour_str).do(friday_notifier)
+    schedule.every().saturday.at(reset_hour_str).do(saturday_notifier)
 
     schedule.every().sunday.do(switch_hamlyn_tristan_notifier)
 
