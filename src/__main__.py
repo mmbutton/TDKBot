@@ -126,7 +126,7 @@ def saturday_notifier():
 def notifier_thread():
     # Get the timezone offset and figure out the offset from localtime (In a 24 hour context)
     offset = time.timezone if (time.localtime().tm_isdst == 0) else time.altzone
-    offset = offset / 60 / 60 * -1
+    offset = offset / 60 / 60
     reset_time = offset % 24
 
     reset_hour = int(reset_time)
