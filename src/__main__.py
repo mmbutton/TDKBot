@@ -69,7 +69,7 @@ def boss_schedule():
     return "\n".join(boss_schedule)
 
 def boss_schedule_notifier(day):
-    channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
+    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
 
     message = '@everyone Today\'s boss schedule is '
     if day == 1 or 3 or 5:
@@ -90,10 +90,10 @@ def jotun_notifier():
     asyncio.run_coroutine_threadsafe(channel.send('Jotun time @everyone '), client.loop)
 
 def cross_server_notifier():
-    channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
+    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
     asyncio.run_coroutine_threadsafe(channel.send('@everyone New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
 
-# This might be an awfule way to do this but the scheduler daily run never updates after the first run.
+# This might be an awful way to do this but the scheduler daily run never updates after the first run.
 def sunday_notifier():
     cross_server_notifier()
     boss_schedule_notifier(SUNDAY + 1)
