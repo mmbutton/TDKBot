@@ -115,7 +115,6 @@ def thursday_notifier():
     boss_schedule_notifier(THURSDAY + 1)
 
 def friday_notifier():
-    cross_server_notifier()
     boss_schedule_notifier(FRIDAY + 1)
 
 def saturday_notifier():
@@ -129,8 +128,8 @@ def notifier_thread():
     offset = offset / 60 / 60 * -1
     reset_time = offset % 24
 
-    reset_hour = int(reset_time + 1)
-    reset_hour_str = '{:02d}:00'.format(reset_hour)
+    reset_hour = int(reset_time)
+    reset_hour_str = '{:02d}:00'.format(reset_hour + 1)
 
     jotun_hour = (reset_hour - 4) % 24
     jotun_hour_str = '{:02d}:00'.format(jotun_hour)
