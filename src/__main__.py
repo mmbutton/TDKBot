@@ -57,17 +57,20 @@ async def on_message(message):
     if command.startswith(EVENT_SCHEDULE):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
     if command.startswith(HERO):
-        parser = argparse.ArgumentParser(prog="!hero", add_help=False, exit_on_error=False)
+        parser = argparse.ArgumentParser(prog="!hero", add_help=False)
         parser.add_argument('--detailed', '-d', action='store_true')
         parser.add_argument('hero')
         args = parser.parse_args(command.split()[1:])
-        if args.help:
-            await message.channel.send(parser.print_help())
-        if args.hero == 'brunhilde':
+        if args.hero.lower() == 'brunhilde':
             if args.detailed:
                 print("DETAILED_STATS")
             else:
                 await message.channel.send(args.hero + " \nKingdom Power: 30th | Military: 30th | Fortune: 30th | Provisions: 30th | Inspiration: 30th")
+        if args.hero.lower() == 'lancelot':
+            if args.detailed:
+                print("DETAILED_STATS")
+            else:
+                await message.channel.send(args.hero + " \nKingdom Power: 69th | Military: 14th | Fortune: 101st | Provisions: 100th | Inspiration: 105th")
 
 
     
