@@ -1,4 +1,4 @@
-import time, threading, signal, sys, pytz, asyncio, os
+import time, threading, signal, sys, pytz, asyncio, os, argparse, sched
 from pathlib import Path
 from pytz import timezone
 from datetime import datetime, timezone
@@ -15,6 +15,8 @@ client = discord.Client()
 # Command list
 BOSS_SCHEDULE = '!boss_schedule'
 EVENT_SCHEDULE = '!event_schedule'
+HERO = '!hero'
+
 ##############################################################################
 
 # Global variables
@@ -46,12 +48,28 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith('!help'):
+    command = message.content.lower()
+    
+    if command.startswith('!help'):
         await help(message)
-    if message.content.startswith(BOSS_SCHEDULE):
+    if command.startswith(BOSS_SCHEDULE):
         await message.channel.send(boss_schedule())
-    if message.content.startswith(EVENT_SCHEDULE):
+    if command.startswith(EVENT_SCHEDULE):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
+    if command.startswith(HERO):
+        parser = argparse.ArgumentParser(prog="!hero", add_help=False, exit_on_error=False)
+        parser.add_argument('--detailed', '-d', action='store_true')
+        parser.add_argument('hero')
+        args = parser.parse_args(command.split()[1:])
+        if args.help:
+            await message.channel.send(parser.print_help())
+        if args.hero == 'brunhilde':
+            if args.detailed:
+                print("DETAILED_STATS")
+            else:
+                await message.channel.send(args.hero + " \nKingdom Power: 30th | Military: 30th | Fortune: 30th | Provisions: 30th | Inspiration: 30th")
+
+
     
 
 async def help(message):
@@ -79,7 +97,7 @@ def boss_schedule_notifier(day):
     elif day == 6:
         message = message + 'George V day'
 
-    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
+    return message;
 
 def switch_hamlyn_tristan_notifier():
     channel = client.get_channel(int(os.getenv('KINGS_COUNCIL')))
@@ -95,32 +113,35 @@ def cross_server_notifier():
 
 # This might be an awful way to do this but the scheduler daily run never updates after the first run.
 def sunday_notifier():
-    cross_server_notifier()
-    boss_schedule_notifier(SUNDAY + 1)
+    message = boss_schedule_notifier(SUNDAY)
+    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def monday_notifier():
-    cross_server_notifier()
-    boss_schedule_notifier(MONDAY + 1)
+    message = boss_schedule_notifier(MONDAY)
+    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def tuesday_notifier():
     cross_server_notifier()
-    boss_schedule_notifier(TUESDAY + 1)
+    message = boss_schedule_notifier(TUESDAY)
+    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def wednesday_notifier():
-    cross_server_notifier()
-    boss_schedule_notifier(WEDNESDAY + 1)
+    message = boss_schedule_notifier(WEDNESDAY)
+    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def thursday_notifier():
     cross_server_notifier()
-    boss_schedule_notifier(THURSDAY + 1)
+    message = boss_schedule_notifier(THURSDAY)
+    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def friday_notifier():
-    boss_schedule_notifier(FRIDAY + 1)
+    message = boss_schedule_notifier(FRIDAY)
+    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def saturday_notifier():
     cross_server_notifier()
-    boss_schedule_notifier((SATURDAY + 1) % 7)
-
+    message = boss_schedule_notifier(SATURDAY)
+    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def notifier_thread():
     # Get the timezone offset and figure out the offset from localtime (In a 24 hour context)
