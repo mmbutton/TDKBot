@@ -1,4 +1,4 @@
-import time, threading, signal, sys, pytz, asyncio, os, argparse, sched
+import time, threading, signal, sys, pytz, asyncio, os, argparse, sched, csv
 from pathlib import Path
 from pytz import timezone
 from datetime import datetime, timezone
@@ -39,6 +39,25 @@ THURSDAY = 4
 FRIDAY = 5
 SATURDAY = 6
 
+hero_attributes_dict = []
+# CSV Import
+with open(Path(__file__).parent / '../resources/hero_attr_stats.csv') as csvfile:
+    reader = csv.DictReader(csvfile)
+    for row in reader:
+        hero_attributes_dict.append(row)
+    
+def hero_growth_rank(hero_name, type):
+    # TODO: This
+    for i, dic in enumerate(hero_attributes_dict):
+        if dic['Hero Name'].lower() == hero_name:
+            return i
+
+def hero_row(hero_name):
+    for i, dic in enumerate(hero_attributes_dict):
+        if dic['Hero Name'].lower() == hero_name:
+            return dic
+    return None
+
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
@@ -61,16 +80,13 @@ async def on_message(message):
         parser.add_argument('--detailed', '-d', action='store_true')
         parser.add_argument('hero')
         args = parser.parse_args(command.split()[1:])
-        if args.hero.lower() == 'brunhilde':
+
+        entry = hero_row(args.hero.lower())
+        if entry is not None:
             if args.detailed:
-                print("DETAILED_STATS")
+                print(entry)
             else:
-                await message.channel.send(args.hero + " \nKingdom Power: 30th | Military: 30th | Fortune: 30th | Provisions: 30th | Inspiration: 30th")
-        if args.hero.lower() == 'lancelot':
-            if args.detailed:
-                print("DETAILED_STATS")
-            else:
-                await message.channel.send(args.hero + " \nKingdom Power: 69th | Military: 14th | Fortune: 101st | Provisions: 100th | Inspiration: 105th")
+                await message.channel.send("{0}\nKingdom Power: {1} | Military: {2} | Fortune: {3} | Provisions: {4} | Inspiration: {5}".format(entry['Hero Name'], entry['Max KP'], entry['Max Military'], entry['Max Fortune'], entry['Max Provisions'], entry['Max Inspiration']))
 
 
     
