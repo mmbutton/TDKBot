@@ -86,7 +86,7 @@ async def on_message(message):
             if args.detailed:
                 print(entry)
             else:
-                await message.channel.send("{0}\nKingdom Power: {1} | Military: {2} | Fortune: {3} | Provisions: {4} | Inspiration: {5}".format(entry['Hero Name'], entry['Max KP'], entry['Max Military'], entry['Max Fortune'], entry['Max Provisions'], entry['Max Inspiration']))
+                await message.channel.send("{0}\nKingdom Power: {1} | Max Power: {2} | Military: {3} | Fortune: {4} | Provisions: {5} | Inspiration: {6}".format(entry['Hero Name'], entry['Max Power'], entry['Max KP'], entry['Max Military'], entry['Max Fortune'], entry['Max Provisions'], entry['Max Inspiration']))
 
 
     
