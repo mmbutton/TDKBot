@@ -67,7 +67,7 @@ with open(Path(__file__).parent / '../resources/hero_attr_stats.csv') as csvfile
 def get_sorted_growths(type, difficulty=5):
     growths = []
     for dic in hero_attributes_dict:
-        if float(dic[DIFFICULTY]) > difficulty:
+        if float(dic[DIFFICULTY]) >= difficulty:
             continue
         growth = {}
         growth[HERO_NAME] = dic[HERO_NAME]
@@ -120,7 +120,7 @@ async def parse_tier_list_args(prog, command):
         await message.channel.send("Can only specify one of new or low econ")
         return -1
 
-    difficulty = 5
+    difficulty = 101
     if args.new:
         difficulty = 2
     if args.low_econ:
@@ -162,7 +162,7 @@ async def on_message(message):
         if difficulty <0:
             return
         tier_list = sorted(hero_attributes_dict, key=lambda k: int(k[MAX_POWER]), reverse=True)
-        tier_list = list(filter(lambda k: float(k[DIFFICULTY]) <= difficulty, tier_list))
+        tier_list = list(filter(lambda k: float(k[DIFFICULTY]) < difficulty, tier_list))
         tier_list_str = "**Power Tier List**\n"
 
         rank = 1
