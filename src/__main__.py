@@ -64,7 +64,7 @@ with open(Path(__file__).parent / '../resources/hero_attr_stats.csv') as csvfile
     for row in reader:
         hero_attributes_dict.append(row)
 
-def get_sorted_growths(type, difficulty=5):
+def get_sorted_growths(type, difficulty=6):
     growths = []
     for dic in hero_attributes_dict:
         if float(dic[DIFFICULTY]) >= difficulty:
