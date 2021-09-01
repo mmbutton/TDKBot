@@ -110,6 +110,23 @@ def hero_name_diff(command_hero_name):
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
+async def parse_tier_list_args(prog, command):
+    parser = argparse.ArgumentParser(prog=POWER_TIER_LIST, add_help=False)
+    parser.add_argument('--new', '-n', action='store_true')
+    parser.add_argument('--low_econ', '-l', action='store_true')
+    args = parser.parse_args(command.split()[1:])
+
+    if args.new and args.low_econ:
+        await message.channel.send("Can only specify one of new or low econ")
+        return -1
+
+    difficulty = 5
+    if args.new:
+        difficulty = 2
+    if args.low_econ:
+        difficulty = 4
+    return difficulty
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
@@ -141,59 +158,69 @@ async def on_message(message):
             diffs = hero_name_diff(args.hero.lower())
             await message.channel.send("Hero " + args.hero + " not found. Close hero names: " + str(diffs))
     if command.startswith(POWER_TIER_LIST):
-        parser = argparse.ArgumentParser(prog=POWER_TIER_LIST, add_help=False)
-        parser.add_argument('--new', '-n', action='store_true')
-        parser.add_argument('--low_econ', '-l', action='store_true')
-        args = parser.parse_args(command.split()[1:])
-
-        if args.new and args.low_econ:
-            await message.channel.send("Can only specify one of new or low econ")
-
-        difficulty = 5
-        if args.new:
-            difficulty = 2
-        if args.low_econ:
-            difficulty = 4
-        
+        difficulty = await parse_tier_list_args(POWER_TIER_LIST, command)
+        if difficulty <0:
+            return
         tier_list = sorted(hero_attributes_dict, key=lambda k: int(k[MAX_POWER]), reverse=True)
         tier_list = list(filter(lambda k: float(k[DIFFICULTY]) <= difficulty, tier_list))
         tier_list_str = "**Power Tier List**\n"
-        rank = 1;
+
+        rank = 1
         for hero in tier_list[:20]:
             tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + hero[MAX_POWER] + ")\n"
             rank += 1
+
         await message.channel.send(tier_list_str)
     if command.startswith(MILITARY_TIER_LIST):
-        tier_list = create_growth_tier_list(MILITARY_GROWTH, 5, 20)
+        difficulty = await parse_tier_list_args(MILITARY_TIER_LIST, command)
+        if difficulty <0:
+            return
+        tier_list = create_growth_tier_list(MILITARY_GROWTH, difficulty, 20)
         tier_list_str = "**Military Tier List**\n"
-        rank = 1;
+
+        rank = 1
         for hero in tier_list:
             tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'] * 100)) + "%)\n"
             rank += 1
         await message.channel.send(tier_list_str)
     if command.startswith(FORTUNE_TIER_LIST):
-        tier_list = create_growth_tier_list(FORTUNE_GROWTH, 5, 20)
+        difficulty = await parse_tier_list_args(FORTUNE_TIER_LIST, command)
+        if difficulty <0:
+            return
+        tier_list = create_growth_tier_list(FORTUNE_GROWTH, difficulty, 20)
         tier_list_str = "**Fortune Tier List**\n"
-        rank = 1;
+
+        rank = 1
         for hero in tier_list:
             tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'] * 100)) + "%)\n"
             rank += 1
+            
         await message.channel.send(tier_list_str)
     if command.startswith(PROVISIONS_TIER_LIST):
-        tier_list = create_growth_tier_list(PROVISIONS_GROWTH, 5, 20)
+        difficulty = await parse_tier_list_args(PROVISIONS_TIER_LIST, command)
+        if difficulty <0:
+            return
+        tier_list = create_growth_tier_list(PROVISIONS_GROWTH, difficulty, 20)
         tier_list_str = "**Provisions Tier List**\n"
-        rank = 1;
+
+        rank = 1
         for hero in tier_list:
             tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'] * 100)) + "%)\n"
             rank += 1
+
         await message.channel.send(tier_list_str)
     if command.startswith(INSPIRATION_TIER_LIST):
-        tier_list = create_growth_tier_list(INSPIRATION_GROWTH, 5, 20)
+        difficulty = await parse_tier_list_args(INSPIRATION_TIER_LIST, command)
+        if difficulty <0:
+            return
+        tier_list = create_growth_tier_list(INSPIRATION_GROWTH, difficulty, 20)
         tier_list_str = "**Inspiration Tier List**\n"
-        rank = 1;
+
+        rank = 1
         for hero in tier_list:
             tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'] * 100)) + "%)\n"
             rank += 1
+
         await message.channel.send(tier_list_str)
 
 
