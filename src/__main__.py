@@ -113,17 +113,17 @@ async def on_ready():
 async def parse_tier_list_args(prog, command):
     parser = argparse.ArgumentParser(prog=POWER_TIER_LIST, add_help=False)
     parser.add_argument('--new', '-n', action='store_true')
-    parser.add_argument('--low_econ', '-l', action='store_true')
+    parser.add_argument('--low_vip', '-l', action='store_true')
     args = parser.parse_args(command.split()[1:])
 
-    if args.new and args.low_econ:
+    if args.new and args.low_vip:
         await message.channel.send("Can only specify one of new or low econ")
         return -1
 
     difficulty = 101
     if args.new:
-        difficulty = 2
-    if args.low_econ:
+        difficulty = 3
+    if args.low_vip:
         difficulty = 4
     return difficulty
 
@@ -233,7 +233,7 @@ async def help(message):
     await message.channel.send(EVENT_SCHEDULE + ': Posts an image of the event schedule for challenges and cross server events')
     await message.channel.send(HERO + ': Shows the rating of the hero compared to others. Use -d to see fully detailed stats')
     await message.channel.send('---------------------------------------------------------------------------')
-    await message.channel.send('All tier lists can use the "--low_econ" or "new" flags to create a tier list geared towards lower spenders or new players')
+    await message.channel.send('All tier lists can use the "--low_vip" or "new" flags to create a tier list geared towards lower spenders or new players')
     await message.channel.send(POWER_TIER_LIST + ': Tier list for the strongest hero\'s rated by maximum power')
     await message.channel.send(MILITARY_TIER_LIST + ': Tier list for military growth')
     await message.channel.send(FORTUNE_TIER_LIST + ': Tier list for fortune growth')
