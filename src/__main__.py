@@ -64,7 +64,7 @@ with open(Path(__file__).parent / '../resources/hero_attr_stats.csv') as csvfile
     for row in reader:
         hero_attributes_dict.append(row)
 
-def get_sorted_growths(type, difficulty=6):
+def get_sorted_growths(type, difficulty=101):
     growths = []
     for dic in hero_attributes_dict:
         if float(dic[DIFFICULTY]) >= difficulty:
@@ -277,33 +277,40 @@ def cross_server_notifier():
 
 # This might be an awful way to do this but the scheduler daily run never updates after the first run.
 def sunday_notifier():
+    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
     message = boss_schedule_notifier(SUNDAY)
     asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def monday_notifier():
+    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
+    cross_server_notifier()
     message = boss_schedule_notifier(MONDAY)
     asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def tuesday_notifier():
-    cross_server_notifier()
+    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
     message = boss_schedule_notifier(TUESDAY)
     asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def wednesday_notifier():
+    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
+    cross_server_notifier()
     message = boss_schedule_notifier(WEDNESDAY)
     asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def thursday_notifier():
-    cross_server_notifier()
+    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
     message = boss_schedule_notifier(THURSDAY)
     asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def friday_notifier():
+    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
+    cross_server_notifier()
     message = boss_schedule_notifier(FRIDAY)
     asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def saturday_notifier():
-    cross_server_notifier()
+    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
     message = boss_schedule_notifier(SATURDAY)
     asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
