@@ -29,16 +29,6 @@ INSPIRATION_TIER_LIST = '!inspiration_tier_list'
 ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
 
 # Global variables
-BOSS_SCHEDULE_LIST = [
-    'Alliance Boss Schedule (All times in UTC)',
-    '  Monday - King/Lords/Doug',
-    '  Tuesday - Everyone Else',
-    '  Wednesday - King/Lords/Doug',
-    '  Thursday - Everyone Else',
-    '  Friday - King/Lords/Doug',
-    '  Saturday - Everyone Else',
-    '  Sunday - G5',
-]
 
 SUNDAY = 0
 MONDAY = 1
@@ -136,10 +126,10 @@ async def on_message(message):
     
     if command.startswith('!help'):
         await help(message)
-    if command.startswith(BOSS_SCHEDULE):
-        await message.channel.send(boss_schedule())
     if command.startswith(EVENT_SCHEDULE):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
+    if command.startswith(BOSS_SCHEDULE):
+        await message.channel.send("Regular memebers can hit every day except Sunday for 5B power (ie: 2.5k points). Members over 2B KP must hit on Sunday.")
     if command.startswith(HERO):
         parser = argparse.ArgumentParser(prog=HERO, add_help=False)
         parser.add_argument('--detailed', '-d', action='store_true')
@@ -229,7 +219,6 @@ def create_growth_tier_list(type, difficulty, cutoff):
     return list(growths)[:cutoff]
 
 async def help(message):
-    await message.channel.send(BOSS_SCHEDULE + ': Prints the current member list that is allowed to kill bosses')
     await message.channel.send(EVENT_SCHEDULE + ': Posts an image of the event schedule for challenges and cross server events')
     await message.channel.send(HERO + ': Shows the rating of the hero compared to others. Use -d to see fully detailed stats')
     await message.channel.send('---------------------------------------------------------------------------')
@@ -239,29 +228,6 @@ async def help(message):
     await message.channel.send(FORTUNE_TIER_LIST + ': Tier list for fortune growth')
     await message.channel.send(PROVISIONS_TIER_LIST + ': Tier list for provisions growth')
     await message.channel.send(INSPIRATION_TIER_LIST + ': Tier list for inspiration growth')
-    
-def boss_schedule():
-    boss_schedule = BOSS_SCHEDULE_LIST.copy()
-
-    time = datetime.now(tz=timezone.utc)
-    day = time.weekday()
-
-    boss_schedule[day + 1] = '**' + boss_schedule[day + 1] + '**'
-
-    return "\n".join(boss_schedule)
-
-def boss_schedule_notifier(day):
-    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
-
-    message = '@everyone Today\'s boss schedule is '
-    if day == 1 or 3 or 5:
-        message = message + 'Elites & Knights'
-    elif day == 0 or 2 or 4:
-        message = message + 'Kings, Lords and Doug'
-    elif day == 6:
-        message = message + 'George V day'
-
-    return message;
 
 def switch_hamlyn_tristan_notifier():
     channel = client.get_channel(int(os.getenv('KINGS_COUNCIL')))
@@ -272,47 +238,25 @@ def jotun_notifier():
     asyncio.run_coroutine_threadsafe(channel.send('Jotun time @everyone '), client.loop)
 
 def cross_server_notifier():
-    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
+    channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
     asyncio.run_coroutine_threadsafe(channel.send('@everyone New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
 
 # This might be an awful way to do this but the scheduler daily run never updates after the first run.
-def sunday_notifier():
-    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
-    message = boss_schedule_notifier(SUNDAY)
-    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def monday_notifier():
-    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
     cross_server_notifier()
-    message = boss_schedule_notifier(MONDAY)
-    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
-
-def tuesday_notifier():
-    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
-    message = boss_schedule_notifier(TUESDAY)
-    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def wednesday_notifier():
-    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
     cross_server_notifier()
-    message = boss_schedule_notifier(WEDNESDAY)
-    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
-
-def thursday_notifier():
-    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
-    message = boss_schedule_notifier(THURSDAY)
-    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
 def friday_notifier():
-    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
     cross_server_notifier()
-    message = boss_schedule_notifier(FRIDAY)
-    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
 
-def saturday_notifier():
-    channel = client.get_channel(int(os.getenv('BOT_TESTING')))
-    message = boss_schedule_notifier(SATURDAY)
-    asyncio.run_coroutine_threadsafe(channel.send(message), client.loop)
+def boss_notifier():
+    channel = client.get_channel(int(os.getenv('GNERAL_CHAT')))
+    asyncio.run_coroutine_threadsafe(channel.send('@Leader and Lords Please open boss fights.'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone Regular memebers can hit every day except Sunday for 5B power (ie: 2.5k points). Members over 2B KP must hit on Sunday.'), client.loop)
+    
 
 def notifier_thread():
     # Get the timezone offset and figure out the offset from localtime (In a 24 hour context)
@@ -322,19 +266,16 @@ def notifier_thread():
 
     reset_hour = int(reset_time)
     reset_hour_str = '{:02d}:00'.format(reset_hour + 1)
+    schedule.every().day.at(reset_hour_str).do(boss_notifier)
 
     jotun_hour = (reset_hour - 4) % 24
     jotun_hour_str = '{:02d}:00'.format(jotun_hour)
     schedule.every().day.at(jotun_hour_str).do(jotun_notifier)
 
     # This schedule only works for UTC - time zones. UTC plus timezones would break it and make it go off a day late
-    schedule.every().sunday.at(reset_hour_str).do(sunday_notifier)
     schedule.every().monday.at(reset_hour_str).do(monday_notifier)
-    schedule.every().tuesday.at(reset_hour_str).do(tuesday_notifier)
     schedule.every().wednesday.at(reset_hour_str).do(wednesday_notifier)
-    schedule.every().thursday.at(reset_hour_str).do(thursday_notifier)
     schedule.every().friday.at(reset_hour_str).do(friday_notifier)
-    schedule.every().saturday.at(reset_hour_str).do(saturday_notifier)
 
     schedule.every().sunday.do(switch_hamlyn_tristan_notifier)
 
