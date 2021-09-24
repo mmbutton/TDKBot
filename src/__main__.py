@@ -131,21 +131,23 @@ async def on_message(message):
     if command.startswith(BOSS_SCHEDULE):
         await message.channel.send("Regular memebers can hit every day except Sunday for 5B power (ie: 2.5k points). Members over 2B KP must hit on Sunday.")
     if command.startswith(HERO):
-        parser = argparse.ArgumentParser(prog=HERO, add_help=False)
-        parser.add_argument('--detailed', '-d', action='store_true')
-        parser.add_argument('hero')
-        args = parser.parse_args(command.split()[1:])
+        detailed = False
+        command = command[(len(HERO) + 1):]
+        if command.startswith("-d"):
+            detailed = True
+            command = command[3:]
 
-        entry = hero_row(args.hero.lower())
+        hero = command.lower()
+        entry = hero_row(hero)
         if entry is not None:
-            if args.detailed:
+            if detailed:
                 print(entry)
             else:
-                ranks = [ordinal(hero_growth_rank(args.hero.lower(), MILITARY_GROWTH)[0]), ordinal(hero_growth_rank(args.hero.lower(), FORTUNE_GROWTH)[0]), ordinal(hero_growth_rank(args.hero.lower(), PROVISIONS_GROWTH)[0]), ordinal(hero_growth_rank(args.hero.lower(), INSPIRATION_GROWTH)[0])]
-                power_rank = ordinal(hero_rank(args.hero.lower(), MAX_POWER))
+                ranks = [ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]), ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]), ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]), ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])]
+                power_rank = ordinal(hero_rank(hero, MAX_POWER))
                 await message.channel.send("**{0}**\n Max Power Rating: {1} | Military KP Rank: {2} | Fortune KP Rank: {3} | Provisions KP Rank: {4} | Inspiration KP Rank: {5} | Difficulty {6}".format(entry[HERO_NAME], power_rank, ranks[0], ranks[1], ranks[2], ranks[3], entry[DIFFICULTY]))
         else:
-            diffs = hero_name_diff(args.hero.lower())
+            diffs = hero_name_diff(hero)
             await message.channel.send("Hero " + args.hero + " not found. Close hero names: " + str(diffs))
     if command.startswith(POWER_TIER_LIST):
         difficulty = await parse_tier_list_args(POWER_TIER_LIST, command)
