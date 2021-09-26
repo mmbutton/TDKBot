@@ -255,7 +255,7 @@ def friday_notifier():
     cross_server_notifier()
 
 def boss_notifier():
-    channel = client.get_channel(int(os.getenv('GNERAL_CHAT')))
+    channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
     asyncio.run_coroutine_threadsafe(channel.send('@Leader and Lords Please open boss fights.'), client.loop)
     asyncio.run_coroutine_threadsafe(channel.send('@everyone Regular memebers can hit every day except Sunday for 5B power (ie: 2.5k points). Members over 2B KP must hit on Sunday.'), client.loop)
     
