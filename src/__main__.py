@@ -148,7 +148,7 @@ async def on_message(message):
                 await message.channel.send("**{0}**\n Max Power Rating: {1} | Military KP Rank: {2} | Fortune KP Rank: {3} | Provisions KP Rank: {4} | Inspiration KP Rank: {5} | Difficulty {6}".format(entry[HERO_NAME], power_rank, ranks[0], ranks[1], ranks[2], ranks[3], entry[DIFFICULTY]))
         else:
             diffs = hero_name_diff(hero)
-            await message.channel.send("Hero " + args.hero + " not found. Close hero names: " + str(diffs))
+            await message.channel.send("Hero " + hero + " not found. Close hero names: " + str(diffs))
     if command.startswith(POWER_TIER_LIST):
         difficulty = await parse_tier_list_args(POWER_TIER_LIST, command)
         if difficulty <0:
