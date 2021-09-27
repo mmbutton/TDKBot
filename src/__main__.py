@@ -256,9 +256,11 @@ def friday_notifier():
 
 def boss_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
-    asyncio.run_coroutine_threadsafe(channel.send('@Leader and Lords Please open boss fights.'), client.loop)
     asyncio.run_coroutine_threadsafe(channel.send('@everyone Regular memebers can hit every day except Sunday for 5B power (ie: 2.5k points). Members over 2B KP must hit on Sunday.'), client.loop)
     
+def boss_sunday_notifier():
+    channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
+    asyncio.run_coroutine_threadsafe(channel.send('Today is Sunday. Regular members should not hit the bosses'), client.loop)
 
 def notifier_thread():
     # Get the timezone offset and figure out the offset from localtime (In a 24 hour context)
@@ -280,6 +282,7 @@ def notifier_thread():
     schedule.every().friday.at(reset_hour_str).do(friday_notifier)
 
     schedule.every().sunday.do(switch_hamlyn_tristan_notifier)
+    schedule.every().sunday.do(boss_sunday_notifier)
 
     while True:
         time.sleep(1)
