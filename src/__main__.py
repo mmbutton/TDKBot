@@ -256,7 +256,7 @@ def friday_notifier():
 
 def boss_notifier():
     channel = client.get_channel(int(os.getenv('BLOODLUST')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone Regular memebers can hit every day except Sunday for 5B power (ie: 2.5k points). Members over 2B KP must hit on Sunday.'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone Regular members can hit every day except Sunday for 5B power (ie: 2.5k points). Only members over 2B KP may hit on Sunday.'), client.loop)
     
 def boss_sunday_notifier():
     channel = client.get_channel(int(os.getenv('BLOODLUST')))
