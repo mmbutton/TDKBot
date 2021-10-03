@@ -21,6 +21,7 @@ MILITARY_TIER_LIST = '!military_tier_list'
 FORTUNE_TIER_LIST = '!fortune_tier_list'
 PROVISIONS_TIER_LIST = '!provisions_tier_list'
 INSPIRATION_TIER_LIST = '!inspiration_tier_list'
+TOURNEY_FARM = '!tourney_farm'
 
 ##############################################################################
 # Global 1 line functions
@@ -46,6 +47,18 @@ PROVISIONS_GROWTH = 'Provisions Growth'
 INSPIRATION_GROWTH = 'Inspiration Growth'
 MAIDEN_GROWTH = 'Maiden Bond %'
 DIFFICULTY = 'Difficulty'
+
+TOURNEY_FARM_STR = '''
+```+-------------+-----------+--------+-------------+-------------------+
+| Name        | ID        | Heroes | KP          | Attributes Needed |
++-------------+-----------+--------+-------------+-------------------+
+| Lord Bingus | 544003810 | 82     | 780,000,000 | 63m               |
++-------------+-----------+--------+-------------+-------------------+
+| Rex Kingdom | 543000460 | 62     | 119,000,000 | 20m               |
++-------------+-----------+--------+-------------+-------------------+
+| DataFarm    | 544005073 | 24     | 1380000     | 1.5m              |
++-------------+-----------+--------+-------------+-------------------+```
+'''
 
 hero_attributes_dict = []
 # CSV Import
@@ -214,6 +227,8 @@ async def on_message(message):
             rank += 1
 
         await message.channel.send(tier_list_str)
+    if command.startswith(TOURNEY_FARM):
+        await message.channel.send(TOURNEY_FARM_STR)
 
 
 def create_growth_tier_list(type, difficulty, cutoff):
