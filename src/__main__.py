@@ -238,6 +238,7 @@ def create_growth_tier_list(type, difficulty, cutoff):
 async def help(message):
     await message.channel.send(EVENT_SCHEDULE + ': Posts an image of the event schedule for challenges and cross server events')
     await message.channel.send(HERO + ': Shows the rating of the hero compared to others. Use -d to see fully detailed stats')
+    await message.channel.send(TOURNEY_FARM + ': Creates a table of safely farmable individuals (inactive and low KP/hero ratio)')
     await message.channel.send('---------------------------------------------------------------------------')
     await message.channel.send('All tier lists can use the "--low_vip" or "new" flags to create a tier list geared towards lower spenders or new players')
     await message.channel.send(POWER_TIER_LIST + ': Tier list for the strongest hero\'s rated by maximum power')
@@ -271,11 +272,7 @@ def friday_notifier():
 
 def boss_notifier():
     channel = client.get_channel(int(os.getenv('BLOODLUST')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone Regular members can hit every day except Sunday for 5B power (ie: 2.5k points). Only members over 2B KP may hit on Sunday.'), client.loop)
-    
-def boss_sunday_notifier():
-    channel = client.get_channel(int(os.getenv('BLOODLUST')))
-    asyncio.run_coroutine_threadsafe(channel.send('Today is Sunday. Regular members should not hit the bosses'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone Bosses will be opened shortly. Please limit your hits to 5B power (ie: 2.5k points).'), client.loop)
 
 def notifier_thread():
     # Get the timezone offset and figure out the offset from localtime (In a 24 hour context)
@@ -296,8 +293,7 @@ def notifier_thread():
     schedule.every().wednesday.at(reset_hour_str).do(wednesday_notifier)
     schedule.every().friday.at(reset_hour_str).do(friday_notifier)
 
-    schedule.every().sunday.do(switch_hamlyn_tristan_notifier)
-    schedule.every().sunday.do(boss_sunday_notifier)
+    schedule.every().sunday.at(reset_hour_str).do(switch_hamlyn_tristan_notifier)
 
     while True:
         time.sleep(1)
