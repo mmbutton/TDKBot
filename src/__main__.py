@@ -58,6 +58,8 @@ TOURNEY_FARM_STR = '''
 +-------------+-----------+--------+------+
 | eddie hagane| 544002332 | 75     | 247m |
 +-------------+-----------+--------+------+
+| punchbag    | 545005113 | 75     | 12m  |
++-------------+-----------+--------+------+
 | Rex Kingdom | 543000460 | 62     | 119m |
 +-------------+-----------+--------+------+
 | DataFarm    | 544005073 | 24     | 138k |
@@ -251,10 +253,6 @@ async def help(message):
     await message.channel.send(PROVISIONS_TIER_LIST + ': Tier list for provisions growth')
     await message.channel.send(INSPIRATION_TIER_LIST + ': Tier list for inspiration growth')
 
-def switch_hamlyn_tristan_notifier():
-    channel = client.get_channel(int(os.getenv('KINGS_COUNCIL')))
-    asyncio.run_coroutine_threadsafe(channel.send('@King Gobert please switch Hamlyn and Tristan'), client.loop)
-
 def jotun_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
     asyncio.run_coroutine_threadsafe(channel.send('Jotun time @everyone '), client.loop)
@@ -296,8 +294,6 @@ def notifier_thread():
     schedule.every().monday.at(reset_hour_str).do(monday_notifier)
     schedule.every().wednesday.at(reset_hour_str).do(wednesday_notifier)
     schedule.every().friday.at(reset_hour_str).do(friday_notifier)
-
-    schedule.every().sunday.at(reset_hour_str).do(switch_hamlyn_tristan_notifier)
 
     while True:
         time.sleep(1)
