@@ -176,7 +176,7 @@ async def on_message(message):
         entry = hero_row(hero)
         if entry is not None:
             if detailed:
-                print(entry)
+                await message.channel.send(entry)
             else:
                 ranks = [ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]), ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]), ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]), ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])]
                 power_rank = ordinal(hero_rank(hero, MAX_POWER))
