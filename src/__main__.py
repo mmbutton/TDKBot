@@ -119,23 +119,34 @@ def hero_name_diff(command_hero_name):
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
+class ArgumentParserError(Exception): pass
 
-async def parse_tier_list_args(prog, command):
-    parser = argparse.ArgumentParser(prog=POWER_TIER_LIST, add_help=False)
-    parser.add_argument('--new', '-n', action='store_true')
-    parser.add_argument('--low_vip', '-l', action='store_true')
-    args = parser.parse_args(command.split()[1:])
 
-    if args.new and args.low_vip:
-        await message.channel.send("Can only specify one of new or low econ")
+class ThrowingArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        raise ArgumentParserError(message)
+
+async def parse_tier_list_args(message, prog, command):
+    try:
+        parser = ThrowingArgumentParser(prog=POWER_TIER_LIST, add_help=False)
+        parser.add_argument('--new', '-n', action='store_true')
+        parser.add_argument('--low_vip', '-l', action='store_true')
+        args = parser.parse_args(command.split()[1:])
+    
+        if args.new and args.low_vip:
+            await message.channel.send("Can only specify one of new or low econ")
+            return -1
+
+        difficulty = 101
+        if args.new:
+            difficulty = 3
+        if args.low_vip:
+            difficulty = 4
+        return difficulty
+
+    except:
+        await message.channel.send("Unknown arguments detected. Only \"-l\" flag for low_vip or \"-n\" for new players are accepted for arguments")
         return -1
-
-    difficulty = 101
-    if args.new:
-        difficulty = 3
-    if args.low_vip:
-        difficulty = 4
-    return difficulty
 
 @client.event
 async def on_message(message):
@@ -174,7 +185,7 @@ async def on_message(message):
             diffs = hero_name_diff(hero)
             await message.channel.send("Hero " + hero + " not found. Close hero names: " + str(diffs))
     if command.startswith(POWER_TIER_LIST):
-        difficulty = await parse_tier_list_args(POWER_TIER_LIST, command)
+        difficulty = await parse_tier_list_args(message, POWER_TIER_LIST, command)
         if difficulty <0:
             return
         tier_list = sorted(hero_attributes_dict, key=lambda k: int(k[MAX_POWER]), reverse=True)
@@ -188,7 +199,7 @@ async def on_message(message):
 
         await message.channel.send(tier_list_str)
     if command.startswith(MILITARY_TIER_LIST):
-        difficulty = await parse_tier_list_args(MILITARY_TIER_LIST, command)
+        difficulty = await parse_tier_list_args(message, MILITARY_TIER_LIST, command)
         if difficulty <0:
             return
         tier_list = create_growth_tier_list(MILITARY_GROWTH, difficulty, 20)
@@ -200,7 +211,7 @@ async def on_message(message):
             rank += 1
         await message.channel.send(tier_list_str)
     if command.startswith(FORTUNE_TIER_LIST):
-        difficulty = await parse_tier_list_args(FORTUNE_TIER_LIST, command)
+        difficulty = await parse_tier_list_args(message, FORTUNE_TIER_LIST, command)
         if difficulty <0:
             return
         tier_list = create_growth_tier_list(FORTUNE_GROWTH, difficulty, 20)
@@ -213,7 +224,7 @@ async def on_message(message):
             
         await message.channel.send(tier_list_str)
     if command.startswith(PROVISIONS_TIER_LIST):
-        difficulty = await parse_tier_list_args(PROVISIONS_TIER_LIST, command)
+        difficulty = await parse_tier_list_args(message, PROVISIONS_TIER_LIST, command)
         if difficulty <0:
             return
         tier_list = create_growth_tier_list(PROVISIONS_GROWTH, difficulty, 20)
@@ -226,7 +237,7 @@ async def on_message(message):
 
         await message.channel.send(tier_list_str)
     if command.startswith(INSPIRATION_TIER_LIST):
-        difficulty = await parse_tier_list_args(INSPIRATION_TIER_LIST, command)
+        difficulty = await parse_tier_list_args(message, INSPIRATION_TIER_LIST, command)
         if difficulty <0:
             return
         tier_list = create_growth_tier_list(INSPIRATION_GROWTH, difficulty, 20)
@@ -253,7 +264,7 @@ async def help(message):
     await message.channel.send(EVENT_SCHEDULE + ': Posts an image of the event schedule for challenges and cross server events')
     await message.channel.send(HERO + ': Shows the rating of the hero compared to others. Use -d to see fully detailed stats')
     await message.channel.send('---------------------------------------------------------------------------')
-    await message.channel.send('All tier lists can use the "--low_vip" or "new" flags to create a tier list geared towards lower spenders or new players')
+    await message.channel.send('All tier lists can use the low VIP "-l" or new player "-n" flags to create a tier list geared towards lower spenders or new players')
     await message.channel.send(POWER_TIER_LIST + ': Tier list for the strongest hero\'s rated by maximum power')
     await message.channel.send(MILITARY_TIER_LIST + ': Tier list for military growth')
     await message.channel.send(FORTUNE_TIER_LIST + ': Tier list for fortune growth')
