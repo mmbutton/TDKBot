@@ -119,6 +119,7 @@ def hero_name_diff(command_hero_name):
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
 
+
 async def parse_tier_list_args(prog, command):
     parser = argparse.ArgumentParser(prog=POWER_TIER_LIST, add_help=False)
     parser.add_argument('--new', '-n', action='store_true')
@@ -143,12 +144,16 @@ async def on_message(message):
 
     command = message.content.lower()
     
+    ## BL Only commands
+    if os.getenv('BL_SERVER_ID') == str(message.guild.id):
+        if command.startswith(TOURNEY_FARM):
+            await message.channel.send(TOURNEY_FARM_STR)
+ 
+    ## All servers commands
     if command.startswith('!help'):
         await help(message)
     if command.startswith(EVENT_SCHEDULE):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
-    if command.startswith(BOSS_SCHEDULE):
-        await message.channel.send("Regular memebers can hit every day except Sunday for 5B power (ie: 2.5k points). Members over 2B KP must hit on Sunday.")
     if command.startswith(HERO):
         detailed = False
         command = command[(len(HERO) + 1):]
@@ -233,8 +238,6 @@ async def on_message(message):
             rank += 1
 
         await message.channel.send(tier_list_str)
-    if command.startswith(TOURNEY_FARM):
-        await message.channel.send(TOURNEY_FARM_STR)
 
 
 def create_growth_tier_list(type, difficulty, cutoff):
@@ -242,9 +245,13 @@ def create_growth_tier_list(type, difficulty, cutoff):
     return list(growths)[:cutoff]
 
 async def help(message):
+    # BL only commands
+    if BL_SERVER_ID is message.guild.id:
+        await message.channel.send(TOURNEY_FARM + ': Creates a table of safely farmable individuals (inactive and low KP/hero ratio)')
+
+    # All server commands
     await message.channel.send(EVENT_SCHEDULE + ': Posts an image of the event schedule for challenges and cross server events')
     await message.channel.send(HERO + ': Shows the rating of the hero compared to others. Use -d to see fully detailed stats')
-    await message.channel.send(TOURNEY_FARM + ': Creates a table of safely farmable individuals (inactive and low KP/hero ratio)')
     await message.channel.send('---------------------------------------------------------------------------')
     await message.channel.send('All tier lists can use the "--low_vip" or "new" flags to create a tier list geared towards lower spenders or new players')
     await message.channel.send(POWER_TIER_LIST + ': Tier list for the strongest hero\'s rated by maximum power')
