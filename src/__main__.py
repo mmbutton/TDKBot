@@ -246,7 +246,7 @@ def create_growth_tier_list(type, difficulty, cutoff):
 
 async def help(message):
     # BL only commands
-    if BL_SERVER_ID is message.guild.id:
+    if os.getenv('BL_SERVER_ID') == str(message.guild.id):
         await message.channel.send(TOURNEY_FARM + ': Creates a table of safely farmable individuals (inactive and low KP/hero ratio)')
 
     # All server commands
@@ -281,7 +281,7 @@ def friday_notifier():
 
 def boss_notifier():
     channel = client.get_channel(int(os.getenv('BLOODLUST')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone Bosses will be opened shortly. Please limit your hits to 5B power (ie: 2.5k points).'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone Bosses will be opened shortly. Please limit your hits to 10B power (ie: 5k points).'), client.loop)
 
 def notifier_thread():
     # Get the timezone offset and figure out the offset from localtime (In a 24 hour context)
