@@ -193,12 +193,14 @@ async def on_message(message):
                 ranks = [ordinal(hero_rank(hero, MAX_POWER)), ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]), ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]), ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]), ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])]
 
                 response_str = "**{0}**\n".format(entry[HERO_NAME])
-                response_str = response_str + "```Max Attributes (lvl 400)\nMax Power {0} ({1}))| Max KP {2} | Max Military {3} ({4} Growth) | Max Fortune {5} ({6} Growth) | Max Provisions {7} ({8} Growth) | Max Inspiration {9} ({10}) Growth)```\n"\
-                    .format(entry[MAX_POWER], ranks[0], entry[MAX_KP], entry[MAX_MILITARY], ranks[1], entry[MAX_FORTUNE], ranks[2], entry[MAX_PROVISIONS], ranks[3], entry[MAX_INSPIRATION], ranks[4])
-                response_str = response_str + "```Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```\n"\
+                response_str = response_str + "```Max Attributes (lvl 400)\nMax Power {0} | Max KP {1} | Max Military {2} | Max Fortune {3} | Max Provisions {4} | Max Inspiration {5})```"\
+                    .format(entry[MAX_POWER], entry[MAX_KP], entry[MAX_MILITARY], entry[MAX_FORTUNE], entry[MAX_PROVISIONS], entry[MAX_INSPIRATION])
+                response_str = response_str + "```Base Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
                     .format(entry[QUALITY_MILITARY], entry[QUALITY_FORTUNE], entry[QUALITY_PROVISIONS], entry[QUALITY_INSPIRATION])
-                response_str = response_str + "```Total Paragon\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
+                response_str = response_str + "```Total Growth\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
                     .format(get_growth(entry[GROWTH_MILITARY], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_FORTUNE], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_PROVISIONS], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_INSPIRATION], entry[MAIDEN_GROWTH]))
+                response_str = response_str + "```\nRank\n Power {0} | Military {1} | Fortune {2} | Provisions {3} | Inspiration {4}```"\
+                    .format(ranks[0], ranks[1], ranks[2], ranks[3], ranks[4])
                 await message.channel.send(response_str)
                 
             else:
