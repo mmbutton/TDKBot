@@ -28,6 +28,7 @@ TOURNEY_FARM = '!tourney_farm'
 
 # Converts numbers to their orindal (1st, second etc)
 ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
+get_growth = lambda n, m: int((float(n) + float(m)) * 100 )
 
 # Global variables
 
@@ -197,11 +198,11 @@ async def on_message(message):
                 response_str = response_str + "```Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```\n"\
                     .format(entry[QUALITY_MILITARY], entry[QUALITY_FORTUNE], entry[QUALITY_PROVISIONS], entry[QUALITY_INSPIRATION])
                 response_str = response_str + "```Total Paragon\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
-                    .format(entry[GROWTH_MILITARY] * 100, entry[GROWTH_FORTUNE] * 100, entry[GROWTH_PROVISIONS] * 100, entry[GROWTH_INSPIRATION] * 100)
+                    .format(get_growth(entry[GROWTH_MILITARY], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_FORTUNE], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_PROVISIONS], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_INSPIRATION], entry[MAIDEN_GROWTH]))
                 await message.channel.send(response_str)
                 
             else:
-                ranks = [ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]), ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]), ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]), ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])]
+                ranks = [ordinal(hero_rank(hero, MAX_POWER)), ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]), ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]), ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]), ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])]
                 power_rank = ordinal(hero_rank(hero, MAX_POWER))
                 await message.channel.send("**{0}**\n Max Power Rating: {1} | Military KP Rank: {2} | Fortune KP Rank: {3} | Provisions KP Rank: {4} | Inspiration KP Rank: {5} | Difficulty {6}".format(entry[HERO_NAME], ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], entry[DIFFICULTY]))
         else:
