@@ -197,12 +197,11 @@ async def on_message(message):
                     .format(entry[MAX_POWER], entry[MAX_KP], entry[MAX_MILITARY], entry[MAX_FORTUNE], entry[MAX_PROVISIONS], entry[MAX_INSPIRATION])
                 response_str = response_str + "```Base Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
                     .format(entry[QUALITY_MILITARY], entry[QUALITY_FORTUNE], entry[QUALITY_PROVISIONS], entry[QUALITY_INSPIRATION])
-                response_str = response_str + "```Total Growth\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
+                response_str = response_str + "```Total Paragon + Bond %\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
                     .format(get_growth(entry[GROWTH_MILITARY], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_FORTUNE], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_PROVISIONS], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_INSPIRATION], entry[MAIDEN_GROWTH]))
                 response_str = response_str + "```\nRank\n Power {0} | Military {1} | Fortune {2} | Provisions {3} | Inspiration {4}```"\
                     .format(ranks[0], ranks[1], ranks[2], ranks[3], ranks[4])
                 await message.channel.send(response_str)
-                
             else:
                 ranks = [ordinal(hero_rank(hero, MAX_POWER)), ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]), ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]), ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]), ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])]
                 power_rank = ordinal(hero_rank(hero, MAX_POWER))
@@ -299,14 +298,30 @@ async def help(message):
 
 def jotun_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
-    asyncio.run_coroutine_threadsafe(channel.send('Jotun time @everyone '), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun time'), client.loop)
+
+    channel = client.get_channel(int(os.getenv('COLLECTIVE')))
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun time'), client.loop)
+
+def jotun_minions_notifier():
+    channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun\'s minions time'), client.loop)
+
+    channel = client.get_channel(int(os.getenv('COLLECTIVE')))
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun\'s minions time'), client.loop)
+
+def server_reset_notifier():
+    channel = client.get_channel(int(os.getenv('COLLECTIVE')))
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone Daily server rest will be in 15 minutes'), client.loop)
 
 def cross_server_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
     asyncio.run_coroutine_threadsafe(channel.send('@everyone New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
 
-# This might be an awful way to do this but the scheduler daily run never updates after the first run.
+    channel = client.get_channel(int(os.getenv('COLLECTIVE')))
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
 
+# This might be an awful way to do this but the scheduler daily run never updates after the first run.
 def monday_notifier():
     cross_server_notifier()
 
@@ -327,12 +342,22 @@ def notifier_thread():
     reset_time = offset % 24
 
     reset_hour = int(reset_time)
-    reset_hour_str = '{:02d}:00'.format(reset_hour + 1)
-    schedule.every().day.at(reset_hour_str).do(boss_notifier)
+    reset_hour_str = '{:02d}:00'.format(reset_hour)
+
+    boss_open_hour = int(reset_time)
+    boss_open_hour_str = '{:02d}:00'.format(boss_open_hour)
+    schedule.every().day.at(boss_open_hour_str).do(boss_notifier)
+
+    fifteen_min_before_reset_hour_str = '{:02d}:15'.format(reset_hour - 1)
+    schedule.every().day.at(fifteen_min_before_reset_hour_str).do(server_reset_notifier)
 
     jotun_hour = (reset_hour - 4) % 24
     jotun_hour_str = '{:02d}:00'.format(jotun_hour)
     schedule.every().day.at(jotun_hour_str).do(jotun_notifier)
+
+    jotun_minions_hour = (reset_hour + 6) % 24
+    jotun_minions_hour_str = '{:02d}:00'.format(jotun_minions_hour)
+    schedule.every().day.at(jotun_minions_hour_str).do(jotun_minions_notifier)
 
     # This schedule only works for UTC - time zones. UTC plus timezones would break it and make it go off a day late
     schedule.every().monday.at(reset_hour_str).do(monday_notifier)
