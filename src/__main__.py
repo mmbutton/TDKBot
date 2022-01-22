@@ -355,9 +355,9 @@ def notifier_thread():
     jotun_hour_str = '{:02d}:00'.format(jotun_hour)
     schedule.every().day.at(jotun_hour_str).do(jotun_notifier)
 
-    jotun_minions_hour = (reset_hour + 6) % 24
-    jotun_minions_hour_str = '{:02d}:00'.format(jotun_minions_hour)
-    schedule.every().day.at(jotun_minions_hour_str).do(jotun_minions_notifier)
+    #jotun_minions_hour = (reset_hour + 4) % 24
+    #jotun_minions_hour_str = '{:02d}:00'.format(jotun_minions_hour)
+    #schedule.every().day.at(jotun_minions_hour_str).do(jotun_minions_notifier)
 
     # This schedule only works for UTC - time zones. UTC plus timezones would break it and make it go off a day late
     schedule.every().monday.at(reset_hour_str).do(monday_notifier)
