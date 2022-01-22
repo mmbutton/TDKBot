@@ -196,8 +196,8 @@ async def on_message(message):
                     .format(entry[MAX_POWER], ranks[0], entry[MAX_KP], entry[MAX_MILITARY], ranks[1], entry[MAX_FORTUNE], ranks[2], entry[MAX_PROVISIONS], ranks[3], entry[MAX_INSPIRATION], ranks[4])
                 response_str = response_str + "```Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```\n"\
                     .format(entry[QUALITY_MILITARY], entry[QUALITY_FORTUNE], entry[QUALITY_PROVISIONS], entry[QUALITY_INSPIRATION])
-                response_str = response_str + "```Growth\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
-                    .format(entry[GROWTH_MILITARY], entry[GROWTH_FORTUNE], entry[GROWTH_PROVISIONS], entry[GROWTH_INSPIRATION])
+                response_str = response_str + "```Total Paragon\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
+                    .format(entry[GROWTH_MILITARY] * 100, entry[GROWTH_FORTUNE] * 100, entry[GROWTH_PROVISIONS] * 100, entry[GROWTH_INSPIRATION] * 100)
                 await message.channel.send(response_str)
                 
             else:
