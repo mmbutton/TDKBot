@@ -41,6 +41,19 @@ SATURDAY = 6
 
 HERO_NAME = 'Hero Name'
 MAX_POWER = 'Max Power'
+MAX_KP = 'Max KP'
+MAX_MILITARY = 'Max Military'
+MAX_FORTUNE = 'Max Fortune'
+MAX_PROVISIONS = 'Max Provisions'
+QUALITY_MILITARY = 'Military Quality'
+QUALITY_FORTUNE = 'Fortune Quality'
+QUALITY_PROVISIONS = 'Provisions Quality'
+QUALITY_INSPIRATION = 'Inspiration Quality'
+GROWTH_MILITARY = 'Military Growth'
+GROWTH_FORTUNE = 'Fortune Growth'
+GROWTH_PROVISIONS = 'Provisions Growth'
+GROWTH_INSPIRATION = 'Inspiration Growth'
+MAX_INSPIRATION = 'Max Inspiration'
 MILITARY_GROWTH = 'Military Growth'
 FORTUNE_GROWTH = 'Fortune Growth'
 PROVISIONS_GROWTH = 'Provisions Growth'
@@ -176,11 +189,21 @@ async def on_message(message):
         entry = hero_row(hero)
         if entry is not None:
             if detailed:
-                await message.channel.send(entry)
+                ranks = [ordinal(hero_rank(hero, MAX_POWER)), ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]), ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]), ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]), ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])]
+
+                response_str = "**{0}**\n".format(entry[HERO_NAME])
+                response_str = response_str + "```Max Attributes (lvl 400)\nMax Power {0} ({1}))| Max KP {2} | Max Military {3} ({4} Growth) | Max Fortune {5} ({6} Growth) | Max Provisions {7} ({8} Growth) | Max Inspiration {9} ({10}) Growth)```\n"\
+                    .format(entry[MAX_POWER], ranks[0], entry[MAX_KP], entry[MAX_MILITARY], ranks[1], entry[MAX_FORTUNE], ranks[2], entry[MAX_PROVISIONS], ranks[3], entry[MAX_INSPIRATION], ranks[4])
+                response_str = response_str + "```Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```\n"\
+                    .format(entry[QUALITY_MILITARY], entry[QUALITY_FORTUNE], entry[QUALITY_PROVISIONS], entry[QUALITY_INSPIRATION])
+                response_str = response_str + "```Growth\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
+                    .format(entry[GROWTH_MILITARY], entry[GROWTH_FORTUNE], entry[GROWTH_PROVISIONS], entry[GROWTH_INSPIRATION])
+                await message.channel.send(response_str)
+                
             else:
                 ranks = [ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]), ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]), ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]), ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])]
                 power_rank = ordinal(hero_rank(hero, MAX_POWER))
-                await message.channel.send("**{0}**\n Max Power Rating: {1} | Military KP Rank: {2} | Fortune KP Rank: {3} | Provisions KP Rank: {4} | Inspiration KP Rank: {5} | Difficulty {6}".format(entry[HERO_NAME], power_rank, ranks[0], ranks[1], ranks[2], ranks[3], entry[DIFFICULTY]))
+                await message.channel.send("**{0}**\n Max Power Rating: {1} | Military KP Rank: {2} | Fortune KP Rank: {3} | Provisions KP Rank: {4} | Inspiration KP Rank: {5} | Difficulty {6}".format(entry[HERO_NAME], ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], entry[DIFFICULTY]))
         else:
             diffs = hero_name_diff(hero)
             await message.channel.send("Hero " + hero + " not found. Close hero names: " + str(diffs))
