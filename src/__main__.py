@@ -344,11 +344,11 @@ def notifier_thread():
     reset_hour = int(reset_time)
     reset_hour_str = '{:02d}:00'.format(reset_hour)
 
-    boss_open_hour = int(reset_time)
+    boss_open_hour = int(reset_time) + 1
     boss_open_hour_str = '{:02d}:00'.format(boss_open_hour)
     schedule.every().day.at(boss_open_hour_str).do(boss_notifier)
 
-    fifteen_min_before_reset_hour_str = '{:02d}:15'.format(reset_hour - 1)
+    fifteen_min_before_reset_hour_str = '{:02d}:45'.format(reset_hour - 1)
     schedule.every().day.at(fifteen_min_before_reset_hour_str).do(server_reset_notifier)
 
     jotun_hour = (reset_hour - 4) % 24
