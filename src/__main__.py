@@ -364,7 +364,7 @@ def notifier_thread():
     jotun_minions_hour_str = '{:02d}:00'.format(jotun_minions_hour)
     schedule.every().day.at(jotun_minions_hour_str).do(jotun_minions_notifier)
 
-    jotun_minions_hour = (reset_hour + 9) % 24
+    jotun_minions_hour = (reset_hour + 10) % 24
     jotun_minions_hour_str = '{:02d}:00'.format(jotun_minions_hour)
     schedule.every().day.at(jotun_minions_hour_str).do(jotun_minions_notifier)
 
