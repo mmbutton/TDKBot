@@ -237,7 +237,7 @@ async def on_message(message):
 
         rank = 1
         for hero in tier_list:
-            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'] * 100)) + "%)\n"
+            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%)\n"
             rank += 1
         await message.channel.send(tier_list_str)
     if command.startswith(FORTUNE_TIER_LIST):
@@ -249,7 +249,7 @@ async def on_message(message):
 
         rank = 1
         for hero in tier_list:
-            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'] * 100)) + "%)\n"
+            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%)\n"
             rank += 1
             
         await message.channel.send(tier_list_str)
@@ -262,7 +262,7 @@ async def on_message(message):
 
         rank = 1
         for hero in tier_list:
-            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'] * 100)) + "%)\n"
+            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%)\n"
             rank += 1
 
         await message.channel.send(tier_list_str)
@@ -275,7 +275,7 @@ async def on_message(message):
 
         rank = 1
         for hero in tier_list:
-            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'] * 100)) + "%)\n"
+            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%)\n"
             rank += 1
 
         await message.channel.send(tier_list_str)
