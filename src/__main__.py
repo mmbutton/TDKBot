@@ -28,7 +28,8 @@ TOURNEY_FARM = '!tourney_farm'
 
 # Converts numbers to their orindal (1st, second etc)
 ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
-get_growth = lambda n, m: int((float(n) + float(m)) * 100 )
+get_growth = lambda n, m: int((float(n) + float(m) + float(n) * float(m) + 1.15) * 100 )
+get_percent = lambda n: int(float(n) * 100)
 
 # Global variables
 
@@ -100,7 +101,7 @@ def get_sorted_growths(type, difficulty=101):
         if dic[MAIDEN_GROWTH] == '':
             dic[MAIDEN_GROWTH] = 0
 
-        growth['Growth'] = float(dic[type]) + float(dic[MAIDEN_GROWTH])
+        growth['Growth'] = get_growth(dic[type], dic[MAIDEN_GROWTH])
         growths.append(growth)
     return sorted(growths, key=lambda k: k['Growth'], reverse=True)
     
@@ -197,15 +198,19 @@ async def on_message(message):
                     .format(entry[MAX_POWER], entry[MAX_KP], entry[MAX_MILITARY], entry[MAX_FORTUNE], entry[MAX_PROVISIONS], entry[MAX_INSPIRATION])
                 response_str = response_str + "```Base Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
                     .format(entry[QUALITY_MILITARY], entry[QUALITY_FORTUNE], entry[QUALITY_PROVISIONS], entry[QUALITY_INSPIRATION])
-                response_str = response_str + "```Total Paragon + Bond %\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
+                print(entry[GROWTH_MILITARY])
+                print(entry[MAIDEN_GROWTH])
+                response_str = response_str + "```Quality Efficiency %\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
                     .format(get_growth(entry[GROWTH_MILITARY], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_FORTUNE], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_PROVISIONS], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_INSPIRATION], entry[MAIDEN_GROWTH]))
+                response_str = response_str + "```Paragon % (Tome efficiency)\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
+                    .format(get_percent(entry[GROWTH_MILITARY]), get_percent(entry[GROWTH_FORTUNE]), get_percent(entry[GROWTH_PROVISIONS]), get_percent(entry[GROWTH_INSPIRATION]))
                 response_str = response_str + "```\nRank\n Power {0} | Military {1} | Fortune {2} | Provisions {3} | Inspiration {4}```"\
                     .format(ranks[0], ranks[1], ranks[2], ranks[3], ranks[4])
                 await message.channel.send(response_str)
             else:
                 ranks = [ordinal(hero_rank(hero, MAX_POWER)), ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]), ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]), ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]), ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])]
                 power_rank = ordinal(hero_rank(hero, MAX_POWER))
-                await message.channel.send("**{0}**\n Max Power Rating: {1} | Military KP Rank: {2} | Fortune KP Rank: {3} | Provisions KP Rank: {4} | Inspiration KP Rank: {5} | Difficulty {6}".format(entry[HERO_NAME], ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], entry[DIFFICULTY]))
+                await message.channel.send("**{0}**\n Max Power Rating: {1} | Military Growth Rank: {2} | Fortune Growth Rank: {3} | Provisions Growth Rank: {4} | Inspiration Growth Rank: {5} | Difficulty {6}".format(entry[HERO_NAME], ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], entry[DIFFICULTY]))
         else:
             diffs = hero_name_diff(hero)
             await message.channel.send("Hero " + hero + " not found. Close hero names: " + str(diffs))
