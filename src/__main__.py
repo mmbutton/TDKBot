@@ -171,9 +171,10 @@ async def on_message(message):
     command = message.content.lower()
     
     ## BL Only commands
-    if os.getenv('BL_SERVER_ID') == str(message.guild.id):
-        if command.startswith(TOURNEY_FARM):
-            await message.channel.send(TOURNEY_FARM_STR)
+    if(message.guild is not None):
+        if os.getenv('BL_SERVER_ID') == str(message.guild.id):
+            if command.startswith(TOURNEY_FARM):
+                await message.channel.send(TOURNEY_FARM_STR)
  
     ## All servers commands
     if command.startswith('!help'):
@@ -198,8 +199,6 @@ async def on_message(message):
                     .format(entry[MAX_POWER], entry[MAX_KP], entry[MAX_MILITARY], entry[MAX_FORTUNE], entry[MAX_PROVISIONS], entry[MAX_INSPIRATION])
                 response_str = response_str + "```Base Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
                     .format(entry[QUALITY_MILITARY], entry[QUALITY_FORTUNE], entry[QUALITY_PROVISIONS], entry[QUALITY_INSPIRATION])
-                print(entry[GROWTH_MILITARY])
-                print(entry[MAIDEN_GROWTH])
                 response_str = response_str + "```Quality Efficiency %\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
                     .format(get_growth(entry[GROWTH_MILITARY], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_FORTUNE], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_PROVISIONS], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_INSPIRATION], entry[MAIDEN_GROWTH]))
                 response_str = response_str + "```Paragon % (Tome efficiency)\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
@@ -287,8 +286,9 @@ def create_growth_tier_list(type, difficulty, cutoff):
 
 async def help(message):
     # BL only commands
-    if os.getenv('BL_SERVER_ID') == str(message.guild.id):
-        await message.channel.send(TOURNEY_FARM + ': Creates a table of safely farmable individuals (inactive and low KP/hero ratio)')
+    if(message.guild is not None):
+        if os.getenv('BL_SERVER_ID') == str(message.guild.id):
+            await message.channel.send(TOURNEY_FARM + ': Creates a table of safely farmable individuals (inactive and low KP/hero ratio)')
 
     # All server commands
     await message.channel.send(EVENT_SCHEDULE + ': Posts an image of the event schedule for challenges and cross server events')
