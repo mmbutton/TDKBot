@@ -63,6 +63,8 @@ INSPIRATION_GROWTH = 'Inspiration Growth'
 MAIDEN_GROWTH = 'Maiden Bond %'
 DIFFICULTY = 'Difficulty'
 
+LOW_VIP_DIFFICULTY = 4
+NEW_PLAYER_DIFFICULTY = 3
 TOURNEY_FARM_STR = '''
 ```+-------------+-----------+--------+---+
 | Name        | ID        | Heroes | KP   |
@@ -154,9 +156,9 @@ async def parse_tier_list_args(message, prog, command):
 
         difficulty = 101
         if args.new:
-            difficulty = 3
+            difficulty = NEW_PLAYER_DIFFICULTY
         if args.low_vip:
-            difficulty = 4
+            difficulty = LOW_VIP_DIFFICULTY
         return difficulty
 
     except:
@@ -219,7 +221,14 @@ async def on_message(message):
             return
         tier_list = sorted(hero_attributes_dict, key=lambda k: int(k[MAX_POWER]), reverse=True)
         tier_list = list(filter(lambda k: float(k[DIFFICULTY]) < difficulty, tier_list))
-        tier_list_str = "**Power Tier List**\n"
+
+        tier_list_type = ""
+        if difficulty is LOW_VIP_DIFFICULTY:
+            tier_list_type = " (Low VIP)"
+        elif difficulty is NEW_PLAYER_DIFFICULTY:
+            tier_list_type = " (New Player)"
+
+        tier_list_str = "**Power Tier List**" + tier_list_type + "\n"
 
         rank = 1
         for hero in tier_list[:20]:
@@ -232,7 +241,14 @@ async def on_message(message):
         if difficulty <0:
             return
         tier_list = create_growth_tier_list(MILITARY_GROWTH, difficulty, 20)
-        tier_list_str = "**Military Tier List**\n"
+
+        tier_list_type = ""
+        if difficulty is LOW_VIP_DIFFICULTY:
+            tier_list_type = " (Low VIP)"
+        elif difficulty is NEW_PLAYER_DIFFICULTY:
+            tier_list_type = " (New Player)"
+
+        tier_list_str = "**Military Tier List**" + tier_list_type + "\n"
 
         rank = 1
         for hero in tier_list:
@@ -244,7 +260,13 @@ async def on_message(message):
         if difficulty <0:
             return
         tier_list = create_growth_tier_list(FORTUNE_GROWTH, difficulty, 20)
-        tier_list_str = "**Fortune Tier List**\n"
+
+        tier_list_type = ""
+        if difficulty is LOW_VIP_DIFFICULTY:
+            tier_list_type = " (Low VIP)"
+        elif difficulty is NEW_PLAYER_DIFFICULTY:
+            tier_list_type = " (New Player)"
+        tier_list_str = "**Fortune Tier List**" + tier_list_type + "\n"
 
         rank = 1
         for hero in tier_list:
@@ -257,8 +279,15 @@ async def on_message(message):
         if difficulty <0:
             return
         tier_list = create_growth_tier_list(PROVISIONS_GROWTH, difficulty, 20)
-        tier_list_str = "**Provisions Tier List**\n"
+        
 
+        tier_list_type = ""
+        if difficulty is LOW_VIP_DIFFICULTY:
+            tier_list_type = " (Low VIP)"
+        elif difficulty is NEW_PLAYER_DIFFICULTY:
+            tier_list_type = " (New Player)"
+
+        tier_list_str = "**Provisions Tier List**" + tier_list_type + "\n"
         rank = 1
         for hero in tier_list:
             tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%)\n"
@@ -270,7 +299,14 @@ async def on_message(message):
         if difficulty <0:
             return
         tier_list = create_growth_tier_list(INSPIRATION_GROWTH, difficulty, 20)
-        tier_list_str = "**Inspiration Tier List**\n"
+
+        tier_list_type = ""
+        if difficulty is LOW_VIP_DIFFICULTY:
+            tier_list_type = " (Low VIP)"
+        elif difficulty is NEW_PLAYER_DIFFICULTY:
+            tier_list_type = " (New Player)"
+
+        tier_list_str = "**Inspiration Tier List**" + tier_list_type + "\n"
 
         rank = 1
         for hero in tier_list:
