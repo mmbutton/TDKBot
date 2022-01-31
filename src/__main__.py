@@ -2,6 +2,8 @@ import time, threading, signal, sys, pytz, asyncio, os, argparse, sched, csv, di
 from pathlib import Path
 from pytz import timezone
 from datetime import datetime, timezone
+import glob
+import re
 
 import discord
 import schedule
@@ -165,6 +167,19 @@ async def parse_tier_list_args(message, prog, command):
         await message.channel.send("Unknown arguments detected. Only \"-l\" flag for low_vip or \"-n\" for new players are accepted for arguments")
         return -1
 
+def get_hero_inforgraphic(hero_name):
+    path = Path(__file__).parent / '../resources/milo_infographics/*'
+    for filename in glob.glob(str(path)):
+        name = os.path.basename(filename).lower().replace('_', '')
+
+        print(name + " : " + hero_name.lower().replace(' ', ''))
+
+        if re.search(hero_name.lower().replace(' ', ''), name):
+            return filename
+    
+    return None
+
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
@@ -186,10 +201,19 @@ async def on_message(message):
     if command.startswith(HERO):
         detailed = False
         command = command[(len(HERO) + 1):]
+        if command.startswith("-i"):
+            command = command[3:]
+            filename = get_hero_inforgraphic(command)
+            if filename is not None:
+                await message.channel.send(file=discord.File(Path(__file__).parent / filename))
+            else:
+                diffs = hero_name_diff(command.lower())
+                await message.channel.send("Hero " + command + " not found. Close hero names: " + str(diffs))
+            return
+
         if command.startswith("-d"):
             detailed = True
             command = command[3:]
-
         hero = command.lower()
         entry = hero_row(hero)
         if entry is not None:
@@ -214,7 +238,7 @@ async def on_message(message):
                 await message.channel.send("**{0}**\n Max Power Rating: {1} | Military Growth Rank: {2} | Fortune Growth Rank: {3} | Provisions Growth Rank: {4} | Inspiration Growth Rank: {5} | Difficulty {6}".format(entry[HERO_NAME], ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], entry[DIFFICULTY]))
         else:
             diffs = hero_name_diff(hero)
-            await message.channel.send("Hero " + hero + " not found. Close hero names: " + str(diffs))
+            await message.channel.send("Hero " + command + " not found. Close hero names: " + str(diffs))
     if command.startswith(POWER_TIER_LIST):
         difficulty = await parse_tier_list_args(message, POWER_TIER_LIST, command)
         if difficulty <0:
@@ -328,7 +352,7 @@ async def help(message):
 
     # All server commands
     await message.channel.send(EVENT_SCHEDULE + ': Posts an image of the event schedule for challenges and cross server events')
-    await message.channel.send(HERO + ': Shows the rating of the hero compared to others. Use -d to see fully detailed stats')
+    await message.channel.send(HERO + ': Shows the rating of the hero compared to others. Use -d to see fully detailed stats, use -i to pull up an infographic.')
     await message.channel.send('---------------------------------------------------------------------------')
     await message.channel.send('All tier lists can use the low VIP "-l" or new player "-n" flags to create a tier list geared towards lower spenders or new players')
     await message.channel.send(POWER_TIER_LIST + ': Tier list for the strongest hero\'s rated by maximum power')
