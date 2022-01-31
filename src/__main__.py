@@ -339,28 +339,28 @@ async def help(message):
 
 def jotun_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun time'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@Alerts Jotun time'), client.loop)
 
     channel = client.get_channel(int(os.getenv('COLLECTIVE')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun time'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@Alerts Jotun time'), client.loop)
 
 def jotun_minions_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun\'s minions time'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@Alerts Jotun\'s minions time'), client.loop)
 
     channel = client.get_channel(int(os.getenv('COLLECTIVE')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun\'s minions time'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@Alerts Jotun\'s minions time'), client.loop)
 
 def server_reset_notifier():
     channel = client.get_channel(int(os.getenv('COLLECTIVE')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone Daily server rest will be in 15 minutes'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@Alerts Daily server rest will be in 15 minutes'), client.loop)
 
 def cross_server_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@Alerts New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
 
     channel = client.get_channel(int(os.getenv('COLLECTIVE')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@Alerts New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
 
 # This might be an awful way to do this but the scheduler daily run never updates after the first run.
 def monday_notifier():
