@@ -71,17 +71,7 @@ TOURNEY_FARM_STR = '''
 ```+-------------+-----------+--------+---+
 | Name        | ID        | Heroes | KP   |
 +-------------+-----------+--------+------+
-| Lord Bingus | 544003810 | 82     | 780m |
-+-------------+-----------+--------+------+
-| Alan Balrick| 546003575 | 80     | 449m |
-+-------------+-----------+--------+------+
-| eddie hagane| 544002332 | 75     | 247m |
-+-------------+-----------+--------+------+
 | punchbag    | 545005113 | 75     | 12m  |
-+-------------+-----------+--------+------+
-| Rex Kingdom | 543000460 | 62     | 119m |
-+-------------+-----------+--------+------+
-| DataFarm    | 544005073 | 24     | 138k |
 +-------------+-----------+--------+------+```
 '''
 
@@ -363,28 +353,28 @@ async def help(message):
 
 def jotun_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
-    asyncio.run_coroutine_threadsafe(channel.send('@Alerts Jotun time'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@<&' + os.getenv('BL_ALERTS') + '> Jotun time'), client.loop)
 
     channel = client.get_channel(int(os.getenv('COLLECTIVE')))
-    asyncio.run_coroutine_threadsafe(channel.send('@Alerts Jotun time'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@<&' + os.getenv('COLLECTIVE_ALERTS') + '> Jotun time'), client.loop)
 
 def jotun_minions_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
-    asyncio.run_coroutine_threadsafe(channel.send('@Alerts Jotun\'s minions time'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@<&' + os.getenv('BL_ALERTS') + '> Jotun\'s minions time'), client.loop)
 
     channel = client.get_channel(int(os.getenv('COLLECTIVE')))
-    asyncio.run_coroutine_threadsafe(channel.send('@Alerts Jotun\'s minions time'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@<&' + os.getenv('COLLECTIVE_ALERTS') + '> Jotun\'s minions time'), client.loop)
 
 def server_reset_notifier():
     channel = client.get_channel(int(os.getenv('COLLECTIVE')))
-    asyncio.run_coroutine_threadsafe(channel.send('@Alerts Daily server rest will be in 15 minutes'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@<&' + os.getenv('COLLECTIVE_ALERTS') + '> Daily server rest will be in 15 minutes'), client.loop)
 
 def cross_server_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
-    asyncio.run_coroutine_threadsafe(channel.send('@Alerts New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@<&' + os.getenv('BL_ALERTS') + '> New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
 
     channel = client.get_channel(int(os.getenv('COLLECTIVE')))
-    asyncio.run_coroutine_threadsafe(channel.send('@Alerts New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@<&' + os.getenv('COLLECTIVE_ALERTS') + '> New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
 
 # This might be an awful way to do this but the scheduler daily run never updates after the first run.
 def monday_notifier():
