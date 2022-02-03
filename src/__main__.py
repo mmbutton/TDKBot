@@ -162,8 +162,6 @@ def get_hero_inforgraphic(hero_name):
     for filename in glob.glob(str(path)):
         name = os.path.basename(filename).lower().replace('_', '')
 
-        print(name + " : " + hero_name.lower().replace(' ', ''))
-
         if re.search(hero_name.lower().replace(' ', ''), name):
             return filename
     
