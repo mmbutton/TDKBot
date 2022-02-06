@@ -239,16 +239,15 @@ async def on_message(message):
         hero = command.lower()
         entry = hero_row(hero)
         if entry is not None:
-            if detailed:
-                ranks = [
+            ranks = [
                     ordinal(hero_rank(hero, MAX_KP)),
                     ordinal(hero_rank(hero, MAX_POWER)),
                     ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]),
                     ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]),
                     ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]),
                     ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])
-                ]
-
+            ]
+            if detailed:
                 response_str = "**{0}**\n".format(entry[HERO_NAME])
                 response_str = response_str + "```Max Attributes (lvl 400)\nMax Power {0} | Max KP {1} | Max Military {2} | Max Fortune {3} | Max Provisions {4} | Max Inspiration {5})```"\
                     .format(format_big_number(entry[MAX_POWER]), format_big_number(entry[MAX_KP]), format_big_number(entry[MAX_MILITARY]), format_big_number(entry[MAX_FORTUNE]), format_big_number(entry[MAX_PROVISIONS]), format_big_number(entry[MAX_INSPIRATION]))
@@ -264,9 +263,7 @@ async def on_message(message):
                     .format(ranks[2], ranks[3], ranks[4], ranks[5])
                 await message.channel.send(response_str)
             else:
-                ranks = [ordinal(hero_rank(hero, MAX_POWER)), ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]), ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]), ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]), ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])]
-                power_rank = ordinal(hero_rank(hero, MAX_POWER))
-                await message.channel.send("**{0}**\n Max Power Rating: {1} | Military Growth Rank: {2} | Fortune Growth Rank: {3} | Provisions Growth Rank: {4} | Inspiration Growth Rank: {5} | Difficulty {6}".format(entry[HERO_NAME], ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], entry[DIFFICULTY]))
+                await message.channel.send("**{0}**\n ```Max KP Rating: {1} | Max Power Rating: {2} | Military Growth Rank: {3} | Fortune Growth Rank: {4} | Provisions Growth Rank: {5} | Inspiration Growth Rank: {6} | Difficulty {7}```".format(entry[HERO_NAME], ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], ranks[5], entry[DIFFICULTY]))
         else:
             diffs = hero_name_diff(hero)
             await message.channel.send("Hero " + command + " not found. Close hero names: " + str(diffs))
@@ -432,11 +429,12 @@ async def help(message):
     await message.channel.send(HERO + ': Shows the rating of the hero compared to others. Use -d to see fully detailed stats, use -i to pull up an infographic.')
     await message.channel.send('---------------------------------------------------------------------------')
     await message.channel.send('All tier lists can use the low VIP "-l" or new player "-n" flags to create a tier list geared towards lower spenders or new players')
+    await message.channel.send(KP_TIER_LIST + ': Tier list for heroes maximum KP')
     await message.channel.send(POWER_TIER_LIST + ': Tier list for the strongest hero\'s rated by maximum power')
-    await message.channel.send(MILITARY_TIER_LIST + ': Tier list for military growth')
-    await message.channel.send(FORTUNE_TIER_LIST + ': Tier list for fortune growth')
-    await message.channel.send(PROVISIONS_TIER_LIST + ': Tier list for provisions growth')
-    await message.channel.send(INSPIRATION_TIER_LIST + ': Tier list for inspiration growth')
+    await message.channel.send(MILITARY_TIER_LIST + ': Tier list for military growth. Use -a to switch to attributes')
+    await message.channel.send(FORTUNE_TIER_LIST + ': Tier list for fortune growth. Use -a to switch to attributes')
+    await message.channel.send(PROVISIONS_TIER_LIST + ': Tier list for provisions growth. Use -a to switch to attributes')
+    await message.channel.send(INSPIRATION_TIER_LIST + ': Tier list for inspiration growth. Use -a to switch to attributes')
 
 def jotun_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
