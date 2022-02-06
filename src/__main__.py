@@ -4,6 +4,7 @@ from pytz import timezone
 from datetime import datetime, timezone
 import glob
 import re
+from math import log10, floor
 
 import discord
 import schedule
@@ -24,6 +25,7 @@ FORTUNE_TIER_LIST = '!fortune_tier_list'
 PROVISIONS_TIER_LIST = '!provisions_tier_list'
 INSPIRATION_TIER_LIST = '!inspiration_tier_list'
 TOURNEY_FARM = '!tourney_farm'
+KP_TIER_LIST = '!kp_tier_list'
 
 ##############################################################################
 # Global 1 line functions
@@ -32,7 +34,7 @@ TOURNEY_FARM = '!tourney_farm'
 ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
 get_growth = lambda n, m: int((float(n) + float(m) + float(n) * float(m) + 1.15) * 100 )
 get_percent = lambda n: int(float(n) * 100)
-
+round_3sigfig = lambda n: '{:,g}'.format(round(n, 3-int(floor(log10(abs(n))))-1))
 # Global variables
 
 SUNDAY = 0
@@ -71,7 +73,7 @@ TOURNEY_FARM_STR = '''
 ```+-------------+-----------+--------+---+
 | Name        | ID        | Heroes | KP   |
 +-------------+-----------+--------+------+
-| punchbag    | 545005113 | 75     | 12m  |
+| punchbag    | 545005113 | A lot  | 12m  |
 +-------------+-----------+--------+------+```
 '''
 
@@ -81,6 +83,28 @@ with open(Path(__file__).parent / '../resources/hero_attr_stats.csv') as csvfile
     reader = csv.DictReader(csvfile)
     for row in reader:
         hero_attributes_dict.append(row)
+
+def format_big_number(num):
+    suffixes = ["", "K", "M", "B", "T", "Q"]
+    first_numbers = float("{:.2e}".format(int(num))[:4])
+
+    num = "{:,}".format(int(num))
+    if len(num.split(',')[0]) == 2:
+        first_numbers = float(first_numbers) * 10
+    elif len(num.split(',')[0]) == 3:
+        first_numbers = float(first_numbers) * 100
+    return round_3sigfig(first_numbers) + suffixes[num.count(',')]
+
+def create_attributes_tier_list(type, difficulty, cutoff):
+    heros = []
+    for dic in hero_attributes_dict:
+        if float(dic[DIFFICULTY]) >= difficulty:
+            continue
+        hero = {}
+        hero[HERO_NAME] = dic[HERO_NAME]
+        hero['Attributes'] = int(dic[type])
+        heros.append(hero)
+    return sorted(heros, key=lambda k: (k['Attributes']), reverse=True)[:cutoff]
 
 def get_sorted_growths(type, difficulty=101):
     growths = []
@@ -96,8 +120,18 @@ def get_sorted_growths(type, difficulty=101):
             dic[MAIDEN_GROWTH] = 0
 
         growth['Growth'] = get_growth(dic[type], dic[MAIDEN_GROWTH])
+
+        if type is MILITARY_GROWTH:
+            growth['Attributes'] = int(dic[MAX_MILITARY])
+        elif type is FORTUNE_GROWTH:
+            growth['Attributes'] = int(dic[MAX_FORTUNE])
+        elif type is PROVISIONS_GROWTH:
+            growth['Attributes'] = int(dic[MAX_PROVISIONS])
+        elif type is INSPIRATION_GROWTH:
+            growth['Attributes'] = int(dic[MAX_INSPIRATION])
+        
         growths.append(growth)
-    return sorted(growths, key=lambda k: k['Growth'], reverse=True)
+    return sorted(growths, key=lambda k: (k['Growth'], k['Attributes']), reverse=True)
     
 def hero_growth_rank(hero_name, type):
     growths = get_sorted_growths(type)
@@ -140,6 +174,7 @@ async def parse_tier_list_args(message, prog, command):
         parser = ThrowingArgumentParser(prog=POWER_TIER_LIST, add_help=False)
         parser.add_argument('--new', '-n', action='store_true')
         parser.add_argument('--low_vip', '-l', action='store_true')
+        parser.add_argument('--attributes', '-a', action='store_true')
         args = parser.parse_args(command.split()[1:])
     
         if args.new and args.low_vip:
@@ -151,11 +186,11 @@ async def parse_tier_list_args(message, prog, command):
             difficulty = NEW_PLAYER_DIFFICULTY
         if args.low_vip:
             difficulty = LOW_VIP_DIFFICULTY
-        return difficulty
+        return difficulty, args.attributes
 
     except:
         await message.channel.send("Unknown arguments detected. Only \"-l\" flag for low_vip or \"-n\" for new players are accepted for arguments")
-        return -1
+        return -1, false
 
 def get_hero_inforgraphic(hero_name):
     path = Path(__file__).parent / '../resources/milo_infographics/*'
@@ -166,7 +201,6 @@ def get_hero_inforgraphic(hero_name):
             return filename
     
     return None
-
 
 @client.event
 async def on_message(message):
@@ -206,19 +240,28 @@ async def on_message(message):
         entry = hero_row(hero)
         if entry is not None:
             if detailed:
-                ranks = [ordinal(hero_rank(hero, MAX_POWER)), ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]), ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]), ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]), ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])]
+                ranks = [
+                    ordinal(hero_rank(hero, MAX_KP)),
+                    ordinal(hero_rank(hero, MAX_POWER)),
+                    ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]),
+                    ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]),
+                    ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]),
+                    ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])
+                ]
 
                 response_str = "**{0}**\n".format(entry[HERO_NAME])
                 response_str = response_str + "```Max Attributes (lvl 400)\nMax Power {0} | Max KP {1} | Max Military {2} | Max Fortune {3} | Max Provisions {4} | Max Inspiration {5})```"\
-                    .format(entry[MAX_POWER], entry[MAX_KP], entry[MAX_MILITARY], entry[MAX_FORTUNE], entry[MAX_PROVISIONS], entry[MAX_INSPIRATION])
+                    .format(format_big_number(entry[MAX_POWER]), format_big_number(entry[MAX_KP]), format_big_number(entry[MAX_MILITARY]), format_big_number(entry[MAX_FORTUNE]), format_big_number(entry[MAX_PROVISIONS]), format_big_number(entry[MAX_INSPIRATION]))
                 response_str = response_str + "```Base Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
                     .format(entry[QUALITY_MILITARY], entry[QUALITY_FORTUNE], entry[QUALITY_PROVISIONS], entry[QUALITY_INSPIRATION])
                 response_str = response_str + "```Quality Efficiency %\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
                     .format(get_growth(entry[GROWTH_MILITARY], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_FORTUNE], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_PROVISIONS], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_INSPIRATION], entry[MAIDEN_GROWTH]))
                 response_str = response_str + "```Paragon % (Tome efficiency)\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
                     .format(get_percent(entry[GROWTH_MILITARY]), get_percent(entry[GROWTH_FORTUNE]), get_percent(entry[GROWTH_PROVISIONS]), get_percent(entry[GROWTH_INSPIRATION]))
-                response_str = response_str + "```\nRank\n Power {0} | Military {1} | Fortune {2} | Provisions {3} | Inspiration {4}```"\
-                    .format(ranks[0], ranks[1], ranks[2], ranks[3], ranks[4])
+                response_str = response_str + "```\nRank (Power & KP)\n Max KP {0} | Power {1}```"\
+                    .format(ranks[0], ranks[1])
+                response_str = response_str + "```\nRank (Quality Efficiency)\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
+                    .format(ranks[2], ranks[3], ranks[4], ranks[5])
                 await message.channel.send(response_str)
             else:
                 ranks = [ordinal(hero_rank(hero, MAX_POWER)), ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]), ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]), ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]), ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])]
@@ -228,7 +271,7 @@ async def on_message(message):
             diffs = hero_name_diff(hero)
             await message.channel.send("Hero " + command + " not found. Close hero names: " + str(diffs))
     if command.startswith(POWER_TIER_LIST):
-        difficulty = await parse_tier_list_args(message, POWER_TIER_LIST, command)
+        difficulty, attributes = await parse_tier_list_args(message, POWER_TIER_LIST, command)
         if difficulty <0:
             return
         tier_list = sorted(hero_attributes_dict, key=lambda k: int(k[MAX_POWER]), reverse=True)
@@ -244,89 +287,135 @@ async def on_message(message):
 
         rank = 1
         for hero in tier_list[:20]:
-            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + hero[MAX_POWER] + ")\n"
+            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero[MAX_POWER]) + ")\n"
             rank += 1
 
         await message.channel.send(tier_list_str)
-    if command.startswith(MILITARY_TIER_LIST):
-        difficulty = await parse_tier_list_args(message, MILITARY_TIER_LIST, command)
-        if difficulty <0:
+    if command.startswith(KP_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, MILITARY_TIER_LIST, command)
+        if difficulty < 0:
             return
-        tier_list = create_growth_tier_list(MILITARY_GROWTH, difficulty, 20)
 
-        tier_list_type = ""
+        difficulty_type = ""
         if difficulty is LOW_VIP_DIFFICULTY:
-            tier_list_type = " (Low VIP)"
+            difficulty_type = " (Low VIP)"
         elif difficulty is NEW_PLAYER_DIFFICULTY:
-            tier_list_type = " (New Player)"
+            difficulty_type = " (New Player)"
 
-        tier_list_str = "**Military Tier List**" + tier_list_type + "\n"
+        tier_list_str = "**KP Tier List** " + difficulty_type + "\n"
+
+        tier_list = create_attributes_tier_list(MAX_KP, difficulty, 20)
+        rank = 1
+        for hero in tier_list:
+            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero['Attributes']) + ")\n"
+            rank += 1
+        await message.channel.send(tier_list_str)
+    if command.startswith(MILITARY_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, MILITARY_TIER_LIST, command)
+        if difficulty < 0:
+            return
+        if attributes:
+            tier_list = create_attributes_tier_list(MAX_MILITARY, difficulty, 20)
+        else:
+            tier_list = create_growth_tier_list(MILITARY_GROWTH, difficulty, 20)
+
+        difficulty_type = ""
+        if difficulty is LOW_VIP_DIFFICULTY:
+            difficulty_type = " (Low VIP)"
+        elif difficulty is NEW_PLAYER_DIFFICULTY:
+            difficulty_type = " (New Player)"
+
+        tier_list_type = "Max Attributes" if attributes else "Quality Efficiency"
+        tier_list_str = "**Military Tier List (" + tier_list_type + ")** " + difficulty_type + "\n"
 
         rank = 1
         for hero in tier_list:
-            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%)\n"
+            if attributes:
+                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero['Attributes']) + ")\n"
+            else:
+                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
         await message.channel.send(tier_list_str)
     if command.startswith(FORTUNE_TIER_LIST):
-        difficulty = await parse_tier_list_args(message, FORTUNE_TIER_LIST, command)
-        if difficulty <0:
+        difficulty, attributes = await parse_tier_list_args(message, FORTUNE_TIER_LIST, command)
+        if difficulty < 0:
             return
-        tier_list = create_growth_tier_list(FORTUNE_GROWTH, difficulty, 20)
+        if attributes:
+            tier_list = create_attributes_tier_list(MAX_FORTUNE, difficulty, 20)
+        else:
+            tier_list = create_growth_tier_list(FORTUNE_GROWTH, difficulty, 20)
 
-        tier_list_type = ""
+        difficulty_type = ""
         if difficulty is LOW_VIP_DIFFICULTY:
-            tier_list_type = " (Low VIP)"
+            difficulty_type = " (Low VIP)"
         elif difficulty is NEW_PLAYER_DIFFICULTY:
-            tier_list_type = " (New Player)"
-        tier_list_str = "**Fortune Tier List**" + tier_list_type + "\n"
+            difficulty_type = " (New Player)"
+
+        tier_list_type = "Max Attributes" if attributes else "Quality Efficiency"
+        tier_list_str = "**Fortune Tier List (" + tier_list_type + ")** " + difficulty_type + "\n"
 
         rank = 1
         for hero in tier_list:
-            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%)\n"
+            if attributes:
+                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero['Attributes']) + ")\n"
+            else:
+                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
             
         await message.channel.send(tier_list_str)
     if command.startswith(PROVISIONS_TIER_LIST):
-        difficulty = await parse_tier_list_args(message, PROVISIONS_TIER_LIST, command)
-        if difficulty <0:
+        difficulty, attributes = await parse_tier_list_args(message, PROVISIONS_TIER_LIST, command)
+        if difficulty < 0:
             return
-        tier_list = create_growth_tier_list(PROVISIONS_GROWTH, difficulty, 20)
-        
+        if attributes:
+            tier_list = create_attributes_tier_list(MAX_PROVISIONS, difficulty, 20)
+        else:
+            tier_list = create_growth_tier_list(PROVISIONS_GROWTH, difficulty, 20)
 
-        tier_list_type = ""
+        difficulty_type = ""
         if difficulty is LOW_VIP_DIFFICULTY:
-            tier_list_type = " (Low VIP)"
+            difficulty_type = " (Low VIP)"
         elif difficulty is NEW_PLAYER_DIFFICULTY:
-            tier_list_type = " (New Player)"
+            difficulty_type = " (New Player)"
 
-        tier_list_str = "**Provisions Tier List**" + tier_list_type + "\n"
+        tier_list_type = "Max Attributes" if attributes else "Quality Efficiency"
+        tier_list_str = "**Provisions Tier List (" + tier_list_type + ")** " + difficulty_type + "\n"
+
         rank = 1
         for hero in tier_list:
-            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%)\n"
+            if attributes:
+                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero['Attributes']) + ")\n"
+            else:
+                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
 
         await message.channel.send(tier_list_str)
     if command.startswith(INSPIRATION_TIER_LIST):
-        difficulty = await parse_tier_list_args(message, INSPIRATION_TIER_LIST, command)
-        if difficulty <0:
+        difficulty, attributes = await parse_tier_list_args(message, INSPIRATION_TIER_LIST, command)
+        if difficulty < 0:
             return
-        tier_list = create_growth_tier_list(INSPIRATION_GROWTH, difficulty, 20)
+        if attributes:
+            tier_list = create_attributes_tier_list(MAX_INSPIRATION, difficulty, 20)
+        else:
+            tier_list = create_growth_tier_list(INSPIRATION_GROWTH, difficulty, 20)
 
-        tier_list_type = ""
+        difficulty_type = ""
         if difficulty is LOW_VIP_DIFFICULTY:
-            tier_list_type = " (Low VIP)"
+            difficulty_type = " (Low VIP)"
         elif difficulty is NEW_PLAYER_DIFFICULTY:
-            tier_list_type = " (New Player)"
+            difficulty_type = " (New Player)"
 
-        tier_list_str = "**Inspiration Tier List**" + tier_list_type + "\n"
+        tier_list_type = "Max Attributes" if attributes else "Quality Efficiency"
+        tier_list_str = "**Inspiration Tier List (" + tier_list_type + ")** " + difficulty_type + "\n"
 
         rank = 1
         for hero in tier_list:
-            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%)\n"
+            if attributes:
+                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero['Attributes']) + ")\n"
+            else:
+                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
-
         await message.channel.send(tier_list_str)
-
 
 def create_growth_tier_list(type, difficulty, cutoff):
     growths = get_sorted_growths(type, difficulty)
