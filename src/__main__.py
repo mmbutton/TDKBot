@@ -35,8 +35,8 @@ ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
 get_growth = lambda n, m: int((float(n) + float(m) + float(n) * float(m) + 1.15) * 100 )
 get_percent = lambda n: int(float(n) * 100)
 round_3sigfig = lambda n: '{:,g}'.format(round(n, 3-int(floor(log10(abs(n))))-1))
-# Global variables
 
+# Global variables
 SUNDAY = 0
 MONDAY = 1
 TUESDAY = 2
@@ -76,6 +76,8 @@ TOURNEY_FARM_STR = '''
 | punchbag    | 545005113 | A lot  | 12m  |
 +-------------+-----------+--------+------+```
 '''
+
+DM_BOT_MSG = "For longer commands consider DMing the bot to avoid flooding the chat."
 
 hero_attributes_dict = []
 # CSV Import
@@ -261,6 +263,7 @@ async def on_message(message):
                     .format(ranks[0], ranks[1])
                 response_str = response_str + "```\nRank (Quality Efficiency)\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
                     .format(ranks[2], ranks[3], ranks[4], ranks[5])
+                response_str = response_str + "\n" + DM_BOT_MSG
                 await message.channel.send(response_str)
             else:
                 await message.channel.send("**{0}**\n ```Max KP Rating: {1} | Max Power Rating: {2} | Military Growth Rank: {3} | Fortune Growth Rank: {4} | Provisions Growth Rank: {5} | Inspiration Growth Rank: {6} | Difficulty {7}```".format(entry[HERO_NAME], ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], ranks[5], entry[DIFFICULTY]))
@@ -287,7 +290,7 @@ async def on_message(message):
             tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero[MAX_POWER]) + ")\n"
             rank += 1
 
-        await message.channel.send(tier_list_str)
+        await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
     if command.startswith(KP_TIER_LIST):
         difficulty, attributes = await parse_tier_list_args(message, MILITARY_TIER_LIST, command)
         if difficulty < 0:
@@ -306,7 +309,7 @@ async def on_message(message):
         for hero in tier_list:
             tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
-        await message.channel.send(tier_list_str)
+        await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
     if command.startswith(MILITARY_TIER_LIST):
         difficulty, attributes = await parse_tier_list_args(message, MILITARY_TIER_LIST, command)
         if difficulty < 0:
@@ -332,7 +335,7 @@ async def on_message(message):
             else:
                 tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
-        await message.channel.send(tier_list_str)
+        await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
     if command.startswith(FORTUNE_TIER_LIST):
         difficulty, attributes = await parse_tier_list_args(message, FORTUNE_TIER_LIST, command)
         if difficulty < 0:
@@ -359,7 +362,7 @@ async def on_message(message):
                 tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
             
-        await message.channel.send(tier_list_str)
+        await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
     if command.startswith(PROVISIONS_TIER_LIST):
         difficulty, attributes = await parse_tier_list_args(message, PROVISIONS_TIER_LIST, command)
         if difficulty < 0:
@@ -386,7 +389,7 @@ async def on_message(message):
                 tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
 
-        await message.channel.send(tier_list_str)
+        await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
     if command.startswith(INSPIRATION_TIER_LIST):
         difficulty, attributes = await parse_tier_list_args(message, INSPIRATION_TIER_LIST, command)
         if difficulty < 0:
@@ -412,7 +415,7 @@ async def on_message(message):
             else:
                 tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
-        await message.channel.send(tier_list_str)
+        await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
 
 def create_growth_tier_list(type, difficulty, cutoff):
     growths = get_sorted_growths(type, difficulty)
@@ -435,6 +438,7 @@ async def help(message):
     await message.channel.send(FORTUNE_TIER_LIST + ': Tier list for fortune growth. Use -a to switch to attributes')
     await message.channel.send(PROVISIONS_TIER_LIST + ': Tier list for provisions growth. Use -a to switch to attributes')
     await message.channel.send(INSPIRATION_TIER_LIST + ': Tier list for inspiration growth. Use -a to switch to attributes')
+    await message.channel.send('You can send any of these commands to the bot by messaging it directly. Please consider doing so unless you\'re discussing the hero in the channel')
 
 def jotun_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
