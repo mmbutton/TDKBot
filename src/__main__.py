@@ -6,11 +6,13 @@ import glob
 import re
 from math import log10, floor
 
+import redis
 import discord
 import schedule
 from dotenv import load_dotenv
 
 load_dotenv()
+mem = redis.Redis()
 
 # Dev tokens
 client = discord.Client()
@@ -210,16 +212,27 @@ async def on_message(message):
         return
 
     command = message.content.lower()
-    
+    ## Debug
+    if command.startswith('!server'):
+        await message.channel.send(mem.lrange("servers", 0, 0))
     ## BL Only commands
-    if(message.guild is not None):
+    if message.guild is not None:
         if os.getenv('BL_SERVER_ID') == str(message.guild.id):
             if command.startswith(TOURNEY_FARM):
                 await message.channel.send(TOURNEY_FARM_STR)
- 
     ## All servers commands
     if command.startswith('!help'):
         await help(message)
+    if command.startswith('!add_channel_to_notifications'):
+        command = command[(len('!add_channel_to_notifications') + 1):]
+        mem.lpush("servers", message.guild.id)
+        mem.set(str(message.guild.id), message.channel.id)
+        if len(command) > 0:
+           mem.set(str(message.guild.id), "<@&" + str(command + ">"))
+        else:
+            mem.set(str(message.guild.id), "@everyone") 
+        mem.set(str(message.guild.id), message.channel.id)
+        await message.channel.send("Added channel to notifications. Default is to ping everyone. Please add a roleId if you want to only ping a specific role.")
     if command.startswith(EVENT_SCHEDULE):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
     if command.startswith(HERO):
@@ -240,6 +253,7 @@ async def on_message(message):
             command = command[3:]
         hero = command.lower()
         entry = hero_row(hero)
+        print(entry)
         if entry is not None:
             ranks = [
                     ordinal(hero_rank(hero, MAX_KP)),
