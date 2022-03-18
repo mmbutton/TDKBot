@@ -28,6 +28,7 @@ PROVISIONS_TIER_LIST = '!provisions_tier_list'
 INSPIRATION_TIER_LIST = '!inspiration_tier_list'
 TOURNEY_FARM = '!tourney_farm'
 KP_TIER_LIST = '!kp_tier_list'
+FORMULAS = '!formulas'
 
 ##############################################################################
 # Global 1 line functions
@@ -234,6 +235,8 @@ async def on_message(message):
         mem.set(str(message.guild.id), message.channel.id)
         await message.channel.send("Added channel to notifications. Default is to ping everyone. Please add a roleId if you want to only ping a specific role.")
 '''
+    if command.startswith(FORMULAS):
+        await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/formulas.png'))
     if command.startswith(EVENT_SCHEDULE):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
     if command.startswith(HERO):
