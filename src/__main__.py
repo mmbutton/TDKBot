@@ -29,6 +29,8 @@ INSPIRATION_TIER_LIST = '!inspiration_tier_list'
 TOURNEY_FARM = '!tourney_farm'
 KP_TIER_LIST = '!kp_tier_list'
 FORMULAS = '!formulas'
+ZODIACS = '!zodiacs'
+CASTLE_SKINS = '!castle_skins'
 
 ##############################################################################
 # Global 1 line functions
@@ -237,6 +239,10 @@ async def on_message(message):
 '''
     if command.startswith(FORMULAS):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/formulas.png'))
+    if command.startswith(ZODIACS):
+        await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/zodiacs.png'))
+    if command.startswith(CASTLE_SKINS):
+        await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/castle_skins.png'))
     if command.startswith(EVENT_SCHEDULE):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
     if command.startswith(HERO):
@@ -465,6 +471,9 @@ def jotun_notifier():
     channel = client.get_channel(int(os.getenv('COLLECTIVE')))
     asyncio.run_coroutine_threadsafe(channel.send('<@&' + os.getenv('COLLECTIVE_ALERTS') + '> Jotun time'), client.loop)
 
+    channel = client.get_channel(int(os.getenv('MACKENZIE')))
+    asyncio.run_coroutine_threadsafe(channel.send("@everyone Jotun himself arrives on the battlefield!!! Let's show him what we\'re made of!"), client.loop)
+
     channel = client.get_channel(int(os.getenv('S941')))
     asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun time'), client.loop)
 
@@ -475,6 +484,9 @@ def jotun_minions_notifier():
     channel = client.get_channel(int(os.getenv('COLLECTIVE')))
     asyncio.run_coroutine_threadsafe(channel.send('<@&' + os.getenv('COLLECTIVE_ALERTS') + '> Jotun\'s minions time'), client.loop)
 
+    channel = client.get_channel(int(os.getenv('MACKENZIE')))
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun has sent an army at us. We must rally and drive them back!!!'), client.loop)
+
     channel = client.get_channel(int(os.getenv('S941')))
     asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun\'s minions time'), client.loop)
 
@@ -482,8 +494,15 @@ def server_reset_notifier():
     channel = client.get_channel(int(os.getenv('COLLECTIVE')))
     asyncio.run_coroutine_threadsafe(channel.send('<@&' + os.getenv('COLLECTIVE_ALERTS') + '> Daily server rest will be in 15 minutes'), client.loop)
 
+    channel = client.get_channel(int(os.getenv('MACKENZIE')))
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone Server will reset in 15 minutes. Be ready to collect your daily tithes and keep your maidens company!'), client.loop)
+
     channel = client.get_channel(int(os.getenv('S941')))
     asyncio.run_coroutine_threadsafe(channel.send('@everyone Daily server rest will be in 15 minutes'), client.loop)
+
+def boss_free_for_all_notifier():
+    channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
+    asyncio.run_coroutine_threadsafe(channel.send('<@&' + os.getenv('BL_ALERTS') + '> Bosses will be a free for all in 30 minutes. If you have not hit bosses today please get your points in now.'), client.loop)
 
 def cross_server_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
@@ -491,6 +510,9 @@ def cross_server_notifier():
 
     channel = client.get_channel(int(os.getenv('COLLECTIVE')))
     asyncio.run_coroutine_threadsafe(channel.send('<@&' + os.getenv('COLLECTIVE_ALERTS') + '> New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
+
+    channel = client.get_channel(int(os.getenv('MACKENZIE')))
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone A new cross server fight begins!!! Send your hero to battle in the alliance hall!'), client.loop)
 
     channel = client.get_channel(int(os.getenv('S941')))
     asyncio.run_coroutine_threadsafe(channel.send('@everyone New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
@@ -541,6 +563,12 @@ def notifier_thread():
     schedule.every().monday.at(reset_hour_str).do(monday_notifier)
     schedule.every().wednesday.at(reset_hour_str).do(wednesday_notifier)
     schedule.every().friday.at(reset_hour_str).do(friday_notifier)
+
+    boss_free_for_all = (reset_hour - 4) % 24
+    boss_free_for_all_str = '{:02d}:30'.format(boss_free_for_all)
+    schedule.every().day.at(boss_free_for_all_str).do(boss_free_for_all_notifier)
+
+    
 
     while True:
         time.sleep(1)
