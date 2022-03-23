@@ -478,7 +478,7 @@ def jotun_notifier():
     asyncio.run_coroutine_threadsafe(channel.send("@everyone\n Jotun has sent a surprise attack!!! Fight him back everyone!!!"), client.loop)
 
     channel = client.get_channel(int(os.getenv('S941')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun time'), client.loop)''
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun time'), client.loop)
 
 def jotun_minions_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
