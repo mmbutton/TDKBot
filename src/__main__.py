@@ -488,7 +488,7 @@ def jotun_minions_notifier():
     asyncio.run_coroutine_threadsafe(channel.send('<@&' + os.getenv('COLLECTIVE_ALERTS') + '> Jotun\'s minions time'), client.loop)
 
     channel = client.get_channel(int(os.getenv('MACKENZIE')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone\n Jotun is sending a wave of minions in 15 minutes!!! Good luck everyone!!!'), client.loop)
+    asyncio.run_coroutine_threadsafe(channel.send('@everyone\n Jotun sends a wave of minions!!! Good luck everyone!!!'), client.loop)
 
     channel = client.get_channel(int(os.getenv('S941')))
     asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun\'s minions time'), client.loop)
