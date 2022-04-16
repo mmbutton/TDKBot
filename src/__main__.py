@@ -200,14 +200,22 @@ async def parse_tier_list_args(message, prog, command):
         return -1, false
 
 def get_hero_inforgraphic(hero_name):
+    matches = []
     path = Path(__file__).parent / '../resources/milo_infographics/*'
     for filename in glob.glob(str(path)):
         name = os.path.basename(filename).lower().replace('_', '')
 
         if re.search(hero_name.lower().replace(' ', ''), name):
-            return filename
+            matches.append(filename)
     
-    return None
+    if len(matches) == 0:
+        return None
+    if len(matches) == 1:
+        return matches[0]
+    else:
+        return min(matches, key=len)
+            
+    return matches
 
 @client.event
 async def on_message(message):
@@ -263,7 +271,6 @@ async def on_message(message):
             command = command[3:]
         hero = command.lower()
         entry = hero_row(hero)
-        print(entry)
         if entry is not None:
             ranks = [
                     ordinal(hero_rank(hero, MAX_KP)),
