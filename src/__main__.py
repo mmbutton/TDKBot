@@ -214,8 +214,6 @@ def get_hero_inforgraphic(hero_name):
         return matches[0]
     else:
         return min(matches, key=len)
-            
-    return matches
 
 @client.event
 async def on_message(message):
