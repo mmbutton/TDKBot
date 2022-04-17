@@ -168,6 +168,10 @@ def hero_name_diff(command_hero_name):
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
+    notifier = threading.Thread(target=notifier_thread)
+    notifier.daemon = True
+    notifier.start()
+    asyncio.run_coroutine_threadsafe(send_message_to_channel(779080821289385991, '@everyone Server will reset in 15 minutes. Be ready to collect your daily tithes and keep your maidens company!'), client.loop)
 
 class ArgumentParserError(Exception): pass
 
@@ -253,7 +257,7 @@ async def on_message(message):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
     if command.startswith(HERO):
         detailed = False
-        command = command[(len(HERO) + 1):]
+        command = command[(len(HERO) + 1):].replace('‘', '\'')
         if command.startswith("-i"):
             command = command[3:]
             filename = get_hero_inforgraphic(command)
@@ -548,7 +552,6 @@ def notifier_thread():
     offset = offset / 60 / 60 * -1
     reset_time = offset % 24
 
-    print(reset_time, flush=True)
     reset_hour = int(reset_time)
     reset_hour_str = '{:02d}:00'.format(reset_hour)
 
@@ -556,7 +559,7 @@ def notifier_thread():
     boss_open_hour_str = '{:02d}:00'.format(boss_open_hour)
     schedule.every().day.at(boss_open_hour_str).do(boss_notifier)
 
-    fifteen_min_before_reset_hour_str = '13:25'
+    fifteen_min_before_reset_hour_str = '{:02d}:45'.format(reset_hour - 1)
     schedule.every().day.at(fifteen_min_before_reset_hour_str).do(server_reset_notifier)
 
     jotun_hour = (reset_hour - 3) % 24
@@ -585,10 +588,6 @@ def notifier_thread():
         schedule.run_pending()
 
 def main():
-    notifier = threading.Thread(target=notifier_thread)
-    notifier.daemon = True
-    notifier.start()
-
     client.run(os.getenv('DISCORD_TOKEN'))
    
 if __name__ == "__main__":
