@@ -472,6 +472,11 @@ async def help(message):
     await message.channel.send(INSPIRATION_TIER_LIST + ': Tier list for inspiration growth. Use -a to switch to attributes')
     await message.channel.send('You can send any of these commands to the bot by messaging it directly. Please consider doing so unless you\'re discussing the hero in the channel')
 
+async def send_message_to_channel(channel_id, message):
+    channel = await client.fetch_channel(channel_id)
+    print(channel, flush=True)
+    await channel.send(message)
+
 def jotun_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
     asyncio.run_coroutine_threadsafe(channel.send('<@&' + os.getenv('BL_ALERTS') + '> Jotun time'), client.loop)
@@ -499,14 +504,12 @@ def jotun_minions_notifier():
     asyncio.run_coroutine_threadsafe(channel.send('@everyone Jotun\'s minions time'), client.loop)
 
 def server_reset_notifier():
-    channel = client.get_channel(int(os.getenv('COLLECTIVE')))
-    asyncio.run_coroutine_threadsafe(channel.send('<@&' + os.getenv('COLLECTIVE_ALERTS') + '> Daily server rest will be in 15 minutes'), client.loop)
+    #channel = client.get_channel(int(os.getenv('COLLECTIVE')))
+    #asyncio.run_coroutine_threadsafe(channel.send('<@&' + os.getenv('COLLECTIVE_ALERTS') + '> Daily server rest will be in 15 minutes'), client.loop)
+    asyncio.run_coroutine_threadsafe(send_message_to_channel(779080821289385991, '@everyone Server will reset in 15 minutes. Be ready to collect your daily tithes and keep your maidens company!'), client.loop)
 
-    channel = client.get_channel(int(os.getenv('MACKENZIE')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone Server will reset in 15 minutes. Be ready to collect your daily tithes and keep your maidens company!'), client.loop)
-
-    channel = client.get_channel(int(os.getenv('S941')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone Daily server rest will be in 15 minutes'), client.loop)
+    #channel = client.get_channel(int(os.getenv('S941')))
+    #asyncio.run_coroutine_threadsafe(channel.send('@everyone Daily server rest will be in 15 minutes'), client.loop)
 
 def boss_free_for_all_notifier():
     channel = client.get_channel(int(os.getenv('GENERAL_CHAT')))
@@ -545,6 +548,7 @@ def notifier_thread():
     offset = offset / 60 / 60 * -1
     reset_time = offset % 24
 
+    print(reset_time, flush=True)
     reset_hour = int(reset_time)
     reset_hour_str = '{:02d}:00'.format(reset_hour)
 
@@ -552,7 +556,7 @@ def notifier_thread():
     boss_open_hour_str = '{:02d}:00'.format(boss_open_hour)
     schedule.every().day.at(boss_open_hour_str).do(boss_notifier)
 
-    fifteen_min_before_reset_hour_str = '{:02d}:45'.format(reset_hour - 1)
+    fifteen_min_before_reset_hour_str = '13:25'
     schedule.every().day.at(fifteen_min_before_reset_hour_str).do(server_reset_notifier)
 
     jotun_hour = (reset_hour - 3) % 24
@@ -575,8 +579,6 @@ def notifier_thread():
     boss_free_for_all = (reset_hour - 2) % 24
     boss_free_for_all_str = '{:02d}:30'.format(boss_free_for_all)
     schedule.every().day.at(boss_free_for_all_str).do(boss_free_for_all_notifier)
-
-    
 
     while True:
         time.sleep(1)
