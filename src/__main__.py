@@ -256,7 +256,7 @@ async def on_message(message):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
     if command.startswith(HERO):
         detailed = False
-        command = command[(len(HERO) + 1):].replace('‘', '\'')
+        command = command[(len(HERO) + 1):].replace('‘', '\'').replace('’', '\'')
         if command.startswith("-i"):
             command = command[3:]
             filename = get_hero_inforgraphic(command)
