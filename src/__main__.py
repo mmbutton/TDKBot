@@ -484,7 +484,7 @@ def jotun_notifier():
 
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('COLLECTIVE')), '<@&' + os.getenv('COLLECTIVE_ALERTS') + '> Jotun time'), client.loop)
 
-    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('MACKENZIE')), "@everyone\n Jotun has sent a surprise attack!!! Fight him back everyone!!!"), client.loop)
+    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('MACKENZIE')), '@everyone\n Jotun himself has Joined the fight!'), client.loop)
 
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('S941')), '@everyone Jotun time'), client.loop)
 
@@ -493,7 +493,7 @@ def jotun_minions_notifier():
 
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('COLLECTIVE')), '<@&' + os.getenv('COLLECTIVE_ALERTS') + '> Jotun\'s minions time'), client.loop)
 
-    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('MACKENZIE')), '@everyone\n Jotun himself has Joined the fight!'), client.loop)
+    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('MACKENZIE')), "@everyone\n Jotun has sent a surprise attack!!! Fight him back everyone!!!"), client.loop)
 
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('S941')), '@everyone Jotun\'s minions time'), client.loop)
 
