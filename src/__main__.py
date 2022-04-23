@@ -37,8 +37,10 @@ CASTLE_SKINS = '!castle_skins'
 
 # Converts numbers to their orindal (1st, second etc)
 ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
+# Growth is the coefficients from the KP formula (Paragon, Bond, Bronze)
 get_growth = lambda n, m: int((float(n) + float(m) + float(n) * float(m) + 1.15) * 100 )
 get_percent = lambda n: int(float(n) * 100)
+# Rounds to 3 sig figs similar to KT. Ie: 1.56M instead of 1,562,020
 round_3sigfig = lambda n: '{:,g}'.format(round(n, 3-int(floor(log10(abs(n))))-1))
 
 # Global variables
@@ -168,9 +170,6 @@ def hero_name_diff(command_hero_name):
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
-    notifier = threading.Thread(target=notifier_thread)
-    notifier.daemon = True
-    notifier.start()
 
 class ArgumentParserError(Exception): pass
 
@@ -572,6 +571,9 @@ def notifier_thread():
         schedule.run_pending()
 
 def main():
+    notifier = threading.Thread(target=notifier_thread)
+    notifier.daemon = True
+    notifier.start()
     client.run(os.getenv('DISCORD_TOKEN'))
    
 if __name__ == "__main__":
