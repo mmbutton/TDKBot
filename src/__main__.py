@@ -290,7 +290,7 @@ async def on_message(message):
                     .format(get_growth(entry[GROWTH_MILITARY], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_FORTUNE], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_PROVISIONS], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_INSPIRATION], entry[MAIDEN_GROWTH]))
                 response_str = response_str + "```Paragon % (Tome efficiency)\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
                     .format(get_percent(entry[GROWTH_MILITARY]), get_percent(entry[GROWTH_FORTUNE]), get_percent(entry[GROWTH_PROVISIONS]), get_percent(entry[GROWTH_INSPIRATION]))
-                response_str = response_str + "```\nRank (Power & KP)\n Max KP {0} | Power {1}```"\
+                response_str = response_str + "```\nRank (KP | Power)\n Max KP {0} | Power {1}```"\
                     .format(ranks[0], ranks[1])
                 response_str = response_str + "```\nRank (Quality Efficiency)\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
                     .format(ranks[2], ranks[3], ranks[4], ranks[5])
