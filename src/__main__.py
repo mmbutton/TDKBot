@@ -1,3 +1,5 @@
+from command import command_names
+
 import time, threading, signal, sys, pytz, asyncio, os, argparse, sched, csv, difflib
 from pathlib import Path
 from pytz import timezone
@@ -16,22 +18,6 @@ load_dotenv()
 
 # Dev tokens
 client = discord.Client()
-
-# Command list
-BOSS_SCHEDULE = '!boss_schedule'
-EVENT_SCHEDULE = '!event_schedule'
-HERO = '!hero'
-POWER_TIER_LIST = '!power_tier_list'
-MILITARY_TIER_LIST = '!military_tier_list'
-FORTUNE_TIER_LIST = '!fortune_tier_list'
-PROVISIONS_TIER_LIST = '!provisions_tier_list'
-INSPIRATION_TIER_LIST = '!inspiration_tier_list'
-TOURNEY_FARM = '!tourney_farm'
-KP_TIER_LIST = '!kp_tier_list'
-FORMULAS = '!formulas'
-ZODIACS = '!zodiacs'
-CASTLE_SKINS = '!castle_skins'
-MANU_EFFICIENCY = '!manuscript_efficiency'
 
 ##############################################################################
 # Global 1 line functions
@@ -181,7 +167,7 @@ class ThrowingArgumentParser(argparse.ArgumentParser):
 
 async def parse_tier_list_args(message, prog, command):
     try:
-        parser = ThrowingArgumentParser(prog=POWER_TIER_LIST, add_help=False)
+        parser = ThrowingArgumentParser(prog, add_help=False)
         parser.add_argument('--new', '-n', action='store_true')
         parser.add_argument('--low_vip', '-l', action='store_true')
         parser.add_argument('--attributes', '-a', action='store_true')
@@ -230,11 +216,11 @@ async def on_message(message):
     ## BL Only commands
     if message.guild is not None:
         if os.getenv('BL_SERVER_ID') == str(message.guild.id):
-            if command.startswith(TOURNEY_FARM):
+            if command.startswith(command_names.TOURNEY_FARM):
                 await message.channel.send(TOURNEY_FARM_STR)
     ## All servers commands
     if command.startswith('!help'):
-        await help(message)
+        await command_names.help(message)
     '''if command.startswith('!add_channel_to_notifications'):
         command = command[(len('!add_channel_to_notifications') + 1):]
         mem.lpush("servers", message.guild.id)
@@ -246,19 +232,19 @@ async def on_message(message):
         mem.set(str(message.guild.id), message.channel.id)
         await message.channel.send("Added channel to notifications. Default is to ping everyone. Please add a roleId if you want to only ping a specific role.")
 '''
-    if command.startswith(FORMULAS):
+    if command.startswith(command_names.FORMULAS):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/formulas.png'))
-    if command.startswith(ZODIACS):
+    if command.startswith(command_names.ZODIACS):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/zodiacs.png'))
-    if command.startswith(CASTLE_SKINS):
+    if command.startswith(command_names.CASTLE_SKINS):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/castle_skins.png'))
-    if command.startswith(EVENT_SCHEDULE):
+    if command.startswith(command_names.EVENT_SCHEDULE):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
-    if command.startswith(MANU_EFFICIENCY):
+    if command.startswith(command_names.MANU_EFFICIENCY):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/manu_efficiency.png'))
-    if command.startswith(HERO):
+    if command.startswith(command_names.HERO):
         detailed = False
-        command = command[(len(HERO) + 1):].replace('‘', '\'').replace('’', '\'')
+        command = command[(len(command_names.HERO) + 1):].replace('‘', '\'').replace('’', '\'')
         if command.startswith("-i"):
             command = command[3:]
             filename = get_hero_inforgraphic(command)
@@ -304,8 +290,8 @@ async def on_message(message):
         else:
             diffs = hero_name_diff(hero)
             await message.channel.send("Hero " + command + " not found. Close hero names: " + str(diffs))
-    if command.startswith(POWER_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, POWER_TIER_LIST, command)
+    if command.startswith(command_names.POWER_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, command_names.POWER_TIER_LIST, command)
         if difficulty <0:
             return
         tier_list = sorted(hero_attributes_dict, key=lambda k: int(k[MAX_POWER]), reverse=True)
@@ -325,8 +311,8 @@ async def on_message(message):
             rank += 1
 
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
-    if command.startswith(KP_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, MILITARY_TIER_LIST, command)
+    if command.startswith(command_names.KP_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, command_names.KP_TIER_LIST, command)
         if difficulty < 0:
             return
 
@@ -344,8 +330,8 @@ async def on_message(message):
             tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
-    if command.startswith(MILITARY_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, MILITARY_TIER_LIST, command)
+    if command.startswith(command_names.MILITARY_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, command_names.MILITARY_TIER_LIST, command)
         if difficulty < 0:
             return
         if attributes:
@@ -370,8 +356,8 @@ async def on_message(message):
                 tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
-    if command.startswith(FORTUNE_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, FORTUNE_TIER_LIST, command)
+    if command.startswith(command_names.FORTUNE_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, command_names.FORTUNE_TIER_LIST, command)
         if difficulty < 0:
             return
         if attributes:
@@ -397,8 +383,8 @@ async def on_message(message):
             rank += 1
             
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
-    if command.startswith(PROVISIONS_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, PROVISIONS_TIER_LIST, command)
+    if command.startswith(command_names.PROVISIONS_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, command_names.PROVISIONS_TIER_LIST, command)
         if difficulty < 0:
             return
         if attributes:
@@ -424,8 +410,8 @@ async def on_message(message):
             rank += 1
 
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
-    if command.startswith(INSPIRATION_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, INSPIRATION_TIER_LIST, command)
+    if command.startswith(command_names.INSPIRATION_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, command_names.INSPIRATION_TIER_LIST, command)
         if difficulty < 0:
             return
         if attributes:
@@ -454,29 +440,6 @@ async def on_message(message):
 def create_growth_tier_list(type, difficulty, cutoff):
     growths = get_sorted_growths(type, difficulty)
     return list(growths)[:cutoff]
-
-async def help(message):
-    # BL only commands
-    if(message.guild is not None):
-        if os.getenv('BL_SERVER_ID') == str(message.guild.id):
-            await message.channel.send(TOURNEY_FARM + ': Creates a table of safely farmable individuals (inactive and low KP/hero ratio)')
-
-    # All server commands
-    await message.channel.send(EVENT_SCHEDULE + ': Posts an image of the event schedule for challenges and cross server events')
-    await message.channel.send(HERO + ': Shows the rating of the hero compared to others. Use -d to see fully detailed stats, use -i to pull up an infographic.')
-    await message.channel.send(FORMULAS + ': Pulls up a formula sheet with a bunch of useful formulas such as KP, power etc.')
-    await message.channel.send(ZODIACS + ': Pulls up a screenshot showing Zodiacs, their maidens and their paragons.')
-    await message.channel.send(CASTLE_SKINS + ': Pulls up a screenshot of all current castle skins and there effects.')
-    await message.channel.send(MANU_EFFICIENCY + ': Pulls up Haka\'s inforgraphic showing manuscript batch efficiency')
-    await message.channel.send('---------------------------------------------------------------------------')
-    await message.channel.send('All tier lists can use the low VIP "-l" or new player "-n" flags to create a tier list geared towards lower spenders or new players')
-    await message.channel.send(KP_TIER_LIST + ': Tier list for heroes maximum KP')
-    await message.channel.send(POWER_TIER_LIST + ': Tier list for the strongest hero\'s rated by maximum power')
-    await message.channel.send(MILITARY_TIER_LIST + ': Tier list for military growth. Use -a to switch to attributes')
-    await message.channel.send(FORTUNE_TIER_LIST + ': Tier list for fortune growth. Use -a to switch to attributes')
-    await message.channel.send(PROVISIONS_TIER_LIST + ': Tier list for provisions growth. Use -a to switch to attributes')
-    await message.channel.send(INSPIRATION_TIER_LIST + ': Tier list for inspiration growth. Use -a to switch to attributes')
-    await message.channel.send('You can send any of these commands to the bot by messaging it directly. Please consider doing so unless you\'re discussing the hero in the channel')
 
 async def send_message_to_channel(channel_id, message, publish = False):
     channel = await client.fetch_channel(channel_id)
