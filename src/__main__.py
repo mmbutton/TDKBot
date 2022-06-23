@@ -31,6 +31,7 @@ KP_TIER_LIST = '!kp_tier_list'
 FORMULAS = '!formulas'
 ZODIACS = '!zodiacs'
 CASTLE_SKINS = '!castle_skins'
+MANU_EFFICIENCY = '!manuscript_efficiency'
 
 ##############################################################################
 # Global 1 line functions
@@ -253,6 +254,8 @@ async def on_message(message):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/castle_skins.png'))
     if command.startswith(EVENT_SCHEDULE):
         await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
+    if command.startswith(MANU_EFFICIENCY):
+        await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/manu_efficiency.png'))
     if command.startswith(HERO):
         detailed = False
         command = command[(len(HERO) + 1):].replace('‘', '\'').replace('’', '\'')
@@ -464,6 +467,7 @@ async def help(message):
     await message.channel.send(FORMULAS + ': Pulls up a formula sheet with a bunch of useful formulas such as KP, power etc.')
     await message.channel.send(ZODIACS + ': Pulls up a screenshot showing Zodiacs, their maidens and their paragons.')
     await message.channel.send(CASTLE_SKINS + ': Pulls up a screenshot of all current castle skins and there effects.')
+    await message.channel.send(MANU_EFFICIENCY + ': Pulls up Haka\'s inforgraphic showing manuscript batch efficiency')
     await message.channel.send('---------------------------------------------------------------------------')
     await message.channel.send('All tier lists can use the low VIP "-l" or new player "-n" flags to create a tier list geared towards lower spenders or new players')
     await message.channel.send(KP_TIER_LIST + ': Tier list for heroes maximum KP')
