@@ -1,4 +1,4 @@
-import time, threading, signal, sys, pytz, asyncio, os, argparse, sched
+import time, threading, signal, sys, pytz, asyncio, os, sched
 from pathlib import Path
 from pytz import timezone
 from datetime import datetime, timezone
@@ -37,58 +37,9 @@ THURSDAY = 4
 FRIDAY = 5
 SATURDAY = 6
 
-LOW_VIP_DIFFICULTY = 4
-NEW_PLAYER_DIFFICULTY = 3
-
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
-
-class ArgumentParserError(Exception): pass
-
-
-class ThrowingArgumentParser(argparse.ArgumentParser):
-    def error(self, message):
-        raise ArgumentParserError(message)
-
-async def parse_tier_list_args(message, prog, command):
-    try:
-        parser = ThrowingArgumentParser(prog, add_help=False)
-        parser.add_argument('--new', '-n', action='store_true')
-        parser.add_argument('--low_vip', '-l', action='store_true')
-        parser.add_argument('--attributes', '-a', action='store_true')
-        args = parser.parse_args(command.split()[1:])
-    
-        if args.new and args.low_vip:
-            await message.channel.send("Can only specify one of new or low econ")
-            return -1
-
-        difficulty = 101
-        if args.new:
-            difficulty = NEW_PLAYER_DIFFICULTY
-        if args.low_vip:
-            difficulty = LOW_VIP_DIFFICULTY
-        return difficulty, args.attributes
-
-    except:
-        await message.channel.send("Unknown arguments detected. Only \"-l\" flag for low_vip or \"-n\" for new players are accepted for arguments")
-        return -1, false
-
-def get_hero_inforgraphic(hero_name):
-    matches = []
-    path = Path(__file__).parent / '../resources/milo_infographics/*'
-    for filename in glob.glob(str(path)):
-        name = os.path.basename(filename).lower().replace('_', '')
-
-        if re.search(hero_name.lower().replace(' ', ''), name):
-            matches.append(filename)
-    
-    if len(matches) == 0:
-        return None
-    if len(matches) == 1:
-        return matches[0]
-    else:
-        return min(matches, key=len)
 
 @client.event
 async def on_message(message):
@@ -124,168 +75,19 @@ async def on_message(message):
     if command_str.startswith(command_names.MANU_EFFICIENCY):
         await command.manuscript_efficiency(message)
     if command_str.startswith(command_names.HERO):
-        command_str = command_str[(len(command_names.HERO) + 1):].replace('‘', '\'').replace('’', '\'')
-        if command_str.startswith("-i"):
-            command_str = command_str[3:]
-            filename = get_hero_inforgraphic(command_str)
-            if filename is not None:
-                await message.channel.send(file=discord.File(Path(__file__).parent / filename))
-            else:
-                diffs = hero_name_diff(command_str.lower())
-                await message.channel.send("Hero " + command_str + " not found. Close hero names: " + str(diffs))
-            return
-
-        detailed = False
-        if command_str.startswith("-d"):
-            detailed = True
-            command_str = command_str[3:]
-        hero = command_str.lower()
-        await command.hero(message, hero, detailed)
+        await command.hero(message, command_str)
     if command_str.startswith(command_names.POWER_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, command_names.POWER_TIER_LIST, command_str)
-        if difficulty <0:
-            return
-        tier_list = hero_collection.create_attributes_tier_list(hero_collection.TierList.POWER, difficulty, 20)
-
-        tier_list_type = ""
-        if difficulty is LOW_VIP_DIFFICULTY:
-            tier_list_type = " (Low VIP)"
-        elif difficulty is NEW_PLAYER_DIFFICULTY:
-            tier_list_type = " (New Player)"
-
-        tier_list_str = "**Power Tier List**" + tier_list_type + "\n"
-
-        rank = 1
-        for hero in tier_list[:20]:
-            tier_list_str += str(rank) + ". " + hero.hero_name + " (" + command.format_big_number(hero.max_power) + ")\n"
-            rank += 1
-
-        await message.channel.send(tier_list_str + "\n" + command.DM_BOT_MSG)
+        await command.power_tier_list(message, command_str)
     if command_str.startswith(command_names.KP_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, command_names.KP_TIER_LIST, command_str)
-        if difficulty < 0:
-            return
-
-        difficulty_type = ""
-        if difficulty is LOW_VIP_DIFFICULTY:
-            difficulty_type = " (Low VIP)"
-        elif difficulty is NEW_PLAYER_DIFFICULTY:
-            difficulty_type = " (New Player)"
-
-        tier_list_str = "**KP Tier List** " + difficulty_type + "\n"
-
-        tier_list = hero_collection.create_attributes_tier_list(hero_collection.TierList.KP, difficulty, 20)
-        rank = 1
-        for hero in tier_list:
-            tier_list_str += str(rank) + ". " + hero.hero_name + " (" + command.format_big_number(hero.max_kp) + ")\n"
-            rank += 1
-        await message.channel.send(tier_list_str + "\n" + command.DM_BOT_MSG)
+        await command.kp_tier_list(message, command_str)
     if command_str.startswith(command_names.MILITARY_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, command_names.MILITARY_TIER_LIST, command_str)
-        if difficulty < 0:
-            return
-        if attributes:
-            tier_list = hero_collection.create_attributes_tier_list(hero_collection.TierList.MILITARY, difficulty, 20)
-        else:
-            tier_list = hero_collection.create_growth_tier_list(hero_collection.TierList.MILITARY, difficulty, 20)
-
-        difficulty_type = ""
-        if difficulty is LOW_VIP_DIFFICULTY:
-            difficulty_type = " (Low VIP)"
-        elif difficulty is NEW_PLAYER_DIFFICULTY:
-            difficulty_type = " (New Player)"
-
-        tier_list_type = "Max Attributes" if attributes else "Quality Efficiency"
-        tier_list_str = "**Military Tier List (" + tier_list_type + ")** " + difficulty_type + "\n"
-
-        rank = 1
-        for hero in tier_list:
-            if attributes:
-                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + command.format_big_number(hero.max_military) + ")\n"
-            else:
-                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(hero.military_growth)) + "%, " + command.format_big_number(hero.max_military) + ")\n"
-            rank += 1
-        await message.channel.send(tier_list_str + "\n" + command.DM_BOT_MSG)
+        await command.military_tier_list(message, command_str)
     if command_str.startswith(command_names.FORTUNE_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, command_names.FORTUNE_TIER_LIST, command_str)
-        if difficulty < 0:
-            return
-        if attributes:
-            tier_list = hero_collection.create_attributes_tier_list(hero_collection.TierList.FORTUNE, difficulty, 20)
-        else:
-            tier_list = hero_collection.create_growth_tier_list(hero_collection.TierList.FORTUNE, difficulty, 20)
-
-        difficulty_type = ""
-        if difficulty is LOW_VIP_DIFFICULTY:
-            difficulty_type = " (Low VIP)"
-        elif difficulty is NEW_PLAYER_DIFFICULTY:
-            difficulty_type = " (New Player)"
-
-        tier_list_type = "Max Attributes" if attributes else "Quality Efficiency"
-        tier_list_str = "**Fortune Tier List (" + tier_list_type + ")** " + difficulty_type + "\n"
-
-        rank = 1
-        for hero in tier_list:
-            if attributes:
-                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + command.format_big_number(hero.max_fortune) + ")\n"
-            else:
-                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(hero.fortune_growth)) + "%, " + command.format_big_number(hero.max_fortune) + ")\n"
-            rank += 1
-            
-        await message.channel.send(tier_list_str + "\n" + command.DM_BOT_MSG)
+        await command.fortune_tier_list(message, command_str)
     if command_str.startswith(command_names.PROVISIONS_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, command_names.PROVISIONS_TIER_LIST, command_str)
-        if difficulty < 0:
-            return
-        if attributes:
-            tier_list = hero_collection.create_attributes_tier_list(hero_collection.TierList.PROVISIONS, difficulty, 20)
-        else:
-            tier_list = hero_collection.create_growth_tier_list(hero_collection.TierList.PROVISIONS, difficulty, 20)
-
-        difficulty_type = ""
-        if difficulty is LOW_VIP_DIFFICULTY:
-            difficulty_type = " (Low VIP)"
-        elif difficulty is NEW_PLAYER_DIFFICULTY:
-            difficulty_type = " (New Player)"
-
-        tier_list_type = "Max Attributes" if attributes else "Quality Efficiency"
-        tier_list_str = "**Provisions Tier List (" + tier_list_type + ")** " + difficulty_type + "\n"
-
-        rank = 1
-        for hero in tier_list:
-            if attributes:
-                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + command.format_big_number(hero.max_provisions) + ")\n"
-            else:
-                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(hero.provisions_growth)) + "%, " + command.format_big_number(hero.max_provisions) + ")\n"
-            rank += 1
-
-        await message.channel.send(tier_list_str + "\n" + command.DM_BOT_MSG)
+        await command.provisions_tier_list(message, command_str)
     if command_str.startswith(command_names.INSPIRATION_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, command_names.INSPIRATION_TIER_LIST, command_str)
-        if difficulty < 0:
-            return
-        if attributes:
-            tier_list = hero_collection.create_attributes_tier_list(hero_collection.TierList.INSPIRATION, difficulty, 20)
-        else:
-            tier_list = hero_collection.create_growth_tier_list(hero_collection.TierList.INSPIRATION, difficulty, 20)
-
-        difficulty_type = ""
-        if difficulty is LOW_VIP_DIFFICULTY:
-            difficulty_type = " (Low VIP)"
-        elif difficulty is NEW_PLAYER_DIFFICULTY:
-            difficulty_type = " (New Player)"
-
-        tier_list_type = "Max Attributes" if attributes else "Quality Efficiency"
-        tier_list_str = "**Inspiration Tier List (" + tier_list_type + ")** " + difficulty_type + "\n"
-
-        rank = 1
-        for hero in tier_list:
-            if attributes:
-                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + command.format_big_number(hero.max_inspiration) + ")\n"
-            else:
-                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(hero.inspiration_growth)) + "%, " + command.format_big_number(hero.max_inspiration) + ")\n"
-            rank += 1
-        await message.channel.send(tier_list_str + "\n" + command.DM_BOT_MSG)
+        await command.inspiration_tier_list(message, command_str)
 
 async def send_message_to_channel(channel_id, message, publish = False):
     channel = await client.fetch_channel(channel_id)
