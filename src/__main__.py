@@ -1,5 +1,3 @@
-from command import command_names
-
 import time, threading, signal, sys, pytz, asyncio, os, argparse, sched, csv, difflib
 from pathlib import Path
 from pytz import timezone
@@ -7,11 +5,14 @@ from datetime import datetime, timezone
 import glob
 import re
 from math import log10, floor
+import os
 
 #import redis
 import discord
 import schedule
 from dotenv import load_dotenv
+
+from command import command_names, command
 
 load_dotenv()
 #mem = redis.Redis()
@@ -63,13 +64,6 @@ DIFFICULTY = 'Difficulty'
 
 LOW_VIP_DIFFICULTY = 4
 NEW_PLAYER_DIFFICULTY = 3
-TOURNEY_FARM_STR = '''
-```+-------------+-----------+--------+---+
-| Name        | ID        | Heroes | KP   |
-+-------------+-----------+--------+------+
-| punchbag    | 545005113 | A lot  | 12m  |
-+-------------+-----------+--------+------+```
-'''
 
 DM_BOT_MSG = "For longer commands consider DMing the bot to avoid flooding the chat."
 
@@ -209,18 +203,13 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    command = message.content.lower()
+    command_str = message.content.lower()
     ## Debug
     ##if command.startswith('!server'):
         #await message.channel.send(mem.lrange("servers", 0, 0))
-    ## BL Only commands
-    if message.guild is not None:
-        if os.getenv('BL_SERVER_ID') == str(message.guild.id):
-            if command.startswith(command_names.TOURNEY_FARM):
-                await message.channel.send(TOURNEY_FARM_STR)
     ## All servers commands
-    if command.startswith('!help'):
-        await command_names.help(message)
+    if command_str.startswith('!help'):
+        await command.help(message)
     '''if command.startswith('!add_channel_to_notifications'):
         command = command[(len('!add_channel_to_notifications') + 1):]
         mem.lpush("servers", message.guild.id)
@@ -232,33 +221,33 @@ async def on_message(message):
         mem.set(str(message.guild.id), message.channel.id)
         await message.channel.send("Added channel to notifications. Default is to ping everyone. Please add a roleId if you want to only ping a specific role.")
 '''
-    if command.startswith(command_names.FORMULAS):
-        await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/formulas.png'))
-    if command.startswith(command_names.ZODIACS):
-        await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/zodiacs.png'))
-    if command.startswith(command_names.CASTLE_SKINS):
-        await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/castle_skins.png'))
-    if command.startswith(command_names.EVENT_SCHEDULE):
-        await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
-    if command.startswith(command_names.MANU_EFFICIENCY):
-        await message.channel.send(file=discord.File(Path(__file__).parent / '../resources/manu_efficiency.png'))
-    if command.startswith(command_names.HERO):
+    if command_str.startswith(command_names.FORMULAS):
+        await command.formulas(message)
+    if command_str.startswith(command_names.ZODIACS):
+        await command.zodiacs(message)
+    if command_str.startswith(command_names.CASTLE_SKINS):
+        await command.castle_skins(message)
+    if command_str.startswith(command_names.EVENT_SCHEDULE):
+        await command.event_schedule(message)
+    if command_str.startswith(command_names.MANU_EFFICIENCY):
+        await command.manuscript_efficiency(message)
+    if command_str.startswith(command_names.HERO):
         detailed = False
-        command = command[(len(command_names.HERO) + 1):].replace('‘', '\'').replace('’', '\'')
-        if command.startswith("-i"):
-            command = command[3:]
-            filename = get_hero_inforgraphic(command)
+        command_str = command_str[(len(command_names.HERO) + 1):].replace('‘', '\'').replace('’', '\'')
+        if command_str.startswith("-i"):
+            command_str = command_str[3:]
+            filename = get_hero_inforgraphic(command_str)
             if filename is not None:
                 await message.channel.send(file=discord.File(Path(__file__).parent / filename))
             else:
-                diffs = hero_name_diff(command.lower())
-                await message.channel.send("Hero " + command + " not found. Close hero names: " + str(diffs))
+                diffs = hero_name_diff(command_str.lower())
+                await message.channel.send("Hero " + command_str + " not found. Close hero names: " + str(diffs))
             return
 
-        if command.startswith("-d"):
+        if command_str.startswith("-d"):
             detailed = True
-            command = command[3:]
-        hero = command.lower()
+            command_str = command_str[3:]
+        hero = command_str.lower()
         entry = hero_row(hero)
         if entry is not None:
             ranks = [
@@ -289,9 +278,9 @@ async def on_message(message):
                 await message.channel.send("**{0}**\n ```Max KP Rating: {1} | Max Power Rating: {2} | Military Growth Rank: {3} | Fortune Growth Rank: {4} | Provisions Growth Rank: {5} | Inspiration Growth Rank: {6} | Difficulty {7}```".format(entry[HERO_NAME], ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], ranks[5], entry[DIFFICULTY]))
         else:
             diffs = hero_name_diff(hero)
-            await message.channel.send("Hero " + command + " not found. Close hero names: " + str(diffs))
-    if command.startswith(command_names.POWER_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, command_names.POWER_TIER_LIST, command)
+            await message.channel.send("Hero " + command_str + " not found. Close hero names: " + str(diffs))
+    if command_str.startswith(command_names.POWER_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, command_names.POWER_TIER_LIST, command_str)
         if difficulty <0:
             return
         tier_list = sorted(hero_attributes_dict, key=lambda k: int(k[MAX_POWER]), reverse=True)
@@ -311,8 +300,8 @@ async def on_message(message):
             rank += 1
 
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
-    if command.startswith(command_names.KP_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, command_names.KP_TIER_LIST, command)
+    if command_str.startswith(command_names.KP_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, command_names.KP_TIER_LIST, command_str)
         if difficulty < 0:
             return
 
@@ -330,8 +319,8 @@ async def on_message(message):
             tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
-    if command.startswith(command_names.MILITARY_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, command_names.MILITARY_TIER_LIST, command)
+    if command_str.startswith(command_names.MILITARY_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, command_names.MILITARY_TIER_LIST, command_str)
         if difficulty < 0:
             return
         if attributes:
@@ -356,8 +345,8 @@ async def on_message(message):
                 tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
-    if command.startswith(command_names.FORTUNE_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, command_names.FORTUNE_TIER_LIST, command)
+    if command_str.startswith(command_names.FORTUNE_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, command_names.FORTUNE_TIER_LIST, command_str)
         if difficulty < 0:
             return
         if attributes:
@@ -383,8 +372,8 @@ async def on_message(message):
             rank += 1
             
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
-    if command.startswith(command_names.PROVISIONS_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, command_names.PROVISIONS_TIER_LIST, command)
+    if command_str.startswith(command_names.PROVISIONS_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, command_names.PROVISIONS_TIER_LIST, command_str)
         if difficulty < 0:
             return
         if attributes:
@@ -410,8 +399,8 @@ async def on_message(message):
             rank += 1
 
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
-    if command.startswith(command_names.INSPIRATION_TIER_LIST):
-        difficulty, attributes = await parse_tier_list_args(message, command_names.INSPIRATION_TIER_LIST, command)
+    if command_str.startswith(command_names.INSPIRATION_TIER_LIST):
+        difficulty, attributes = await parse_tier_list_args(message, command_names.INSPIRATION_TIER_LIST, command_str)
         if difficulty < 0:
             return
         if attributes:
@@ -436,6 +425,7 @@ async def on_message(message):
                 tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
             rank += 1
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
+    
 
 def create_growth_tier_list(type, difficulty, cutoff):
     growths = get_sorted_growths(type, difficulty)
@@ -544,6 +534,7 @@ def main():
     notifier.daemon = True
     notifier.start()
     client.run(os.getenv('DISCORD_TOKEN'))
+
    
 if __name__ == "__main__":
   main()
