@@ -1,4 +1,4 @@
-import time, threading, signal, sys, pytz, asyncio, os, argparse, sched, csv, difflib
+import time, threading, signal, sys, pytz, asyncio, os, argparse, sched
 from pathlib import Path
 from pytz import timezone
 from datetime import datetime, timezone
@@ -13,6 +13,7 @@ import schedule
 from dotenv import load_dotenv
 
 from command import command_names, command
+from hero import hero_collection
 
 load_dotenv()
 #mem = redis.Redis()
@@ -26,7 +27,6 @@ client = discord.Client()
 # Converts numbers to their orindal (1st, second etc)
 ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
 # Growth is the coefficients from the KP formula (Paragon, Bond, Bronze)
-get_growth = lambda n, m: int((float(n) + float(m) + float(n) * float(m) + 1.15) * 100 )
 get_percent = lambda n: int(float(n) * 100)
 # Rounds to 3 sig figs similar to KT. Ie: 1.56M instead of 1,562,020
 round_3sigfig = lambda n: '{:,g}'.format(round(n, 3-int(floor(log10(abs(n))))-1))
@@ -40,39 +40,10 @@ THURSDAY = 4
 FRIDAY = 5
 SATURDAY = 6
 
-HERO_NAME = 'Hero Name'
-MAX_POWER = 'Max Power'
-MAX_KP = 'Max KP'
-MAX_MILITARY = 'Max Military'
-MAX_FORTUNE = 'Max Fortune'
-MAX_PROVISIONS = 'Max Provisions'
-QUALITY_MILITARY = 'Military Quality'
-QUALITY_FORTUNE = 'Fortune Quality'
-QUALITY_PROVISIONS = 'Provisions Quality'
-QUALITY_INSPIRATION = 'Inspiration Quality'
-GROWTH_MILITARY = 'Military Growth'
-GROWTH_FORTUNE = 'Fortune Growth'
-GROWTH_PROVISIONS = 'Provisions Growth'
-GROWTH_INSPIRATION = 'Inspiration Growth'
-MAX_INSPIRATION = 'Max Inspiration'
-MILITARY_GROWTH = 'Military Growth'
-FORTUNE_GROWTH = 'Fortune Growth'
-PROVISIONS_GROWTH = 'Provisions Growth'
-INSPIRATION_GROWTH = 'Inspiration Growth'
-MAIDEN_GROWTH = 'Maiden Bond %'
-DIFFICULTY = 'Difficulty'
-
 LOW_VIP_DIFFICULTY = 4
 NEW_PLAYER_DIFFICULTY = 3
 
 DM_BOT_MSG = "For longer commands consider DMing the bot to avoid flooding the chat."
-
-hero_attributes_dict = []
-# CSV Import
-with open(Path(__file__).parent / '../resources/hero_attr_stats.csv') as csvfile:
-    reader = csv.DictReader(csvfile)
-    for row in reader:
-        hero_attributes_dict.append(row)
 
 def format_big_number(num):
     suffixes = ["", "K", "M", "B", "T", "Q"]
@@ -84,69 +55,6 @@ def format_big_number(num):
     elif len(num.split(',')[0]) == 3:
         first_numbers = float(first_numbers) * 100
     return round_3sigfig(first_numbers) + suffixes[num.count(',')]
-
-def create_attributes_tier_list(type, difficulty, cutoff):
-    heros = []
-    for dic in hero_attributes_dict:
-        if float(dic[DIFFICULTY]) >= difficulty:
-            continue
-        hero = {}
-        hero[HERO_NAME] = dic[HERO_NAME]
-        hero['Attributes'] = int(dic[type])
-        heros.append(hero)
-    return sorted(heros, key=lambda k: (k['Attributes']), reverse=True)[:cutoff]
-
-def get_sorted_growths(type, difficulty=101):
-    growths = []
-    for dic in hero_attributes_dict:
-        if float(dic[DIFFICULTY]) >= difficulty:
-            continue
-        growth = {}
-        growth[HERO_NAME] = dic[HERO_NAME]
-
-        if dic[type] == '':
-            dic[type] = 0
-        if dic[MAIDEN_GROWTH] == '':
-            dic[MAIDEN_GROWTH] = 0
-
-        growth['Growth'] = get_growth(dic[type], dic[MAIDEN_GROWTH])
-
-        if type is MILITARY_GROWTH:
-            growth['Attributes'] = int(dic[MAX_MILITARY])
-        elif type is FORTUNE_GROWTH:
-            growth['Attributes'] = int(dic[MAX_FORTUNE])
-        elif type is PROVISIONS_GROWTH:
-            growth['Attributes'] = int(dic[MAX_PROVISIONS])
-        elif type is INSPIRATION_GROWTH:
-            growth['Attributes'] = int(dic[MAX_INSPIRATION])
-        
-        growths.append(growth)
-    return sorted(growths, key=lambda k: (k['Growth'], k['Attributes']), reverse=True)
-    
-def hero_growth_rank(hero_name, type):
-    growths = get_sorted_growths(type)
-    for i, dic in enumerate(growths):
-        if dic[HERO_NAME].lower() == hero_name.lower():
-            return i + 1, dic['Growth']
-
-def hero_rank(hero_name, type):
-    sorted_heroes = sorted(hero_attributes_dict, key=lambda k: int(k[type]), reverse=True)
-    for i, dic in enumerate(sorted_heroes):
-        if dic[HERO_NAME].lower() == hero_name.lower():
-            return i + 1
-
-def hero_row(hero_name):
-    for dic in hero_attributes_dict:
-        if dic[HERO_NAME].lower() == hero_name:
-            return dic
-    return None
-
-def hero_name_diff(command_hero_name):
-    heroes = []
-    for dic in hero_attributes_dict:
-        hero_name = dic[HERO_NAME].lower()
-        heroes.append(hero_name)
-    return difflib.get_close_matches(command_hero_name.lower(), heroes, cutoff=0.75)
 
 @client.event
 async def on_ready():
@@ -248,26 +156,26 @@ async def on_message(message):
             detailed = True
             command_str = command_str[3:]
         hero = command_str.lower()
-        entry = hero_row(hero)
+        entry = hero_collection.get_hero(hero)
         if entry is not None:
             ranks = [
-                    ordinal(hero_rank(hero, MAX_KP)),
-                    ordinal(hero_rank(hero, MAX_POWER)),
-                    ordinal(hero_growth_rank(hero, MILITARY_GROWTH)[0]),
-                    ordinal(hero_growth_rank(hero, FORTUNE_GROWTH)[0]),
-                    ordinal(hero_growth_rank(hero, PROVISIONS_GROWTH)[0]),
-                    ordinal(hero_growth_rank(hero, INSPIRATION_GROWTH)[0])
+                    ordinal(hero_collection.hero_rank(hero, hero_collection.TierList.KP)),
+                    ordinal(hero_collection.hero_rank(hero, hero_collection.TierList.POWER)),
+                    ordinal(hero_collection.hero_rank(hero, hero_collection.TierList.MILITARY)),
+                    ordinal(hero_collection.hero_rank(hero, hero_collection.TierList.FORTUNE)),
+                    ordinal(hero_collection.hero_rank(hero, hero_collection.TierList.PROVISIONS)),
+                    ordinal(hero_collection.hero_rank(hero, hero_collection.TierList.INSPIRATION))
             ]
             if detailed:
-                response_str = "**{0}**\n".format(entry[HERO_NAME])
+                response_str = "**{0}**\n".format(entry.hero_name)
                 response_str = response_str + "```Max Attributes (lvl 400)\nMax Power {0} | Max KP {1} | Max Military {2} | Max Fortune {3} | Max Provisions {4} | Max Inspiration {5})```"\
-                    .format(format_big_number(entry[MAX_POWER]), format_big_number(entry[MAX_KP]), format_big_number(entry[MAX_MILITARY]), format_big_number(entry[MAX_FORTUNE]), format_big_number(entry[MAX_PROVISIONS]), format_big_number(entry[MAX_INSPIRATION]))
+                    .format(format_big_number(entry.max_power), format_big_number(entry.max_kp), format_big_number(entry.max_military), format_big_number(entry.max_fortune), format_big_number(entry.max_provisions), format_big_number(entry.max_inspiration))
                 response_str = response_str + "```Base Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
-                    .format(entry[QUALITY_MILITARY], entry[QUALITY_FORTUNE], entry[QUALITY_PROVISIONS], entry[QUALITY_INSPIRATION])
+                    .format(entry.military_quality, entry.fortune_quality, entry.provisions_quality, entry.inspiration_quality)
                 response_str = response_str + "```Quality Efficiency %\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
-                    .format(get_growth(entry[GROWTH_MILITARY], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_FORTUNE], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_PROVISIONS], entry[MAIDEN_GROWTH]), get_growth(entry[GROWTH_INSPIRATION], entry[MAIDEN_GROWTH]))
+                    .format(entry.military_growth, entry.fortune_growth, entry.provisions_growth, entry.inspiration_growth)
                 response_str = response_str + "```Paragon % (Tome efficiency)\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
-                    .format(get_percent(entry[GROWTH_MILITARY]), get_percent(entry[GROWTH_FORTUNE]), get_percent(entry[GROWTH_PROVISIONS]), get_percent(entry[GROWTH_INSPIRATION]))
+                    .format(int(entry.military_paragon * 100), int(entry.fortune_paragon * 100), int(entry.provisions_paragon * 100), int(entry.inspiration_paragon * 100))
                 response_str = response_str + "```\nRank (KP | Power)\n Max KP {0} | Power {1}```"\
                     .format(ranks[0], ranks[1])
                 response_str = response_str + "```\nRank (Quality Efficiency)\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
@@ -275,16 +183,15 @@ async def on_message(message):
                 response_str = response_str + "\n" + DM_BOT_MSG
                 await message.channel.send(response_str)
             else:
-                await message.channel.send("**{0}**\n ```Max KP Rating: {1} | Max Power Rating: {2} | Military Growth Rank: {3} | Fortune Growth Rank: {4} | Provisions Growth Rank: {5} | Inspiration Growth Rank: {6} | Difficulty {7}```".format(entry[HERO_NAME], ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], ranks[5], entry[DIFFICULTY]))
+                await message.channel.send("**{0}**\n ```Max KP Rating: {1} | Max Power Rating: {2} | Military Growth Rank: {3} | Fortune Growth Rank: {4} | Provisions Growth Rank: {5} | Inspiration Growth Rank: {6} | Difficulty {7}```".format(entry.hero_name, ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], ranks[5], entry.difficulty))
         else:
-            diffs = hero_name_diff(hero)
+            diffs = hero_collection.hero_name_diff(hero)
             await message.channel.send("Hero " + command_str + " not found. Close hero names: " + str(diffs))
     if command_str.startswith(command_names.POWER_TIER_LIST):
         difficulty, attributes = await parse_tier_list_args(message, command_names.POWER_TIER_LIST, command_str)
         if difficulty <0:
             return
-        tier_list = sorted(hero_attributes_dict, key=lambda k: int(k[MAX_POWER]), reverse=True)
-        tier_list = list(filter(lambda k: float(k[DIFFICULTY]) < difficulty, tier_list))
+        tier_list = hero_collection.create_attributes_tier_list(hero_collection.TierList.POWER, difficulty, 20)
 
         tier_list_type = ""
         if difficulty is LOW_VIP_DIFFICULTY:
@@ -296,7 +203,7 @@ async def on_message(message):
 
         rank = 1
         for hero in tier_list[:20]:
-            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero[MAX_POWER]) + ")\n"
+            tier_list_str += str(rank) + ". " + hero.hero_name + " (" + format_big_number(hero.max_power) + ")\n"
             rank += 1
 
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
@@ -313,10 +220,10 @@ async def on_message(message):
 
         tier_list_str = "**KP Tier List** " + difficulty_type + "\n"
 
-        tier_list = create_attributes_tier_list(MAX_KP, difficulty, 20)
+        tier_list = hero_collection.create_attributes_tier_list(hero_collection.TierList.KP, difficulty, 20)
         rank = 1
         for hero in tier_list:
-            tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero['Attributes']) + ")\n"
+            tier_list_str += str(rank) + ". " + hero.hero_name + " (" + format_big_number(hero.max_kp) + ")\n"
             rank += 1
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
     if command_str.startswith(command_names.MILITARY_TIER_LIST):
@@ -324,9 +231,9 @@ async def on_message(message):
         if difficulty < 0:
             return
         if attributes:
-            tier_list = create_attributes_tier_list(MAX_MILITARY, difficulty, 20)
+            tier_list = hero_collection.create_attributes_tier_list(hero_collection.TierList.MILITARY, difficulty, 20)
         else:
-            tier_list = create_growth_tier_list(MILITARY_GROWTH, difficulty, 20)
+            tier_list = hero_collection.create_growth_tier_list(hero_collection.TierList.MILITARY, difficulty, 20)
 
         difficulty_type = ""
         if difficulty is LOW_VIP_DIFFICULTY:
@@ -340,9 +247,9 @@ async def on_message(message):
         rank = 1
         for hero in tier_list:
             if attributes:
-                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero['Attributes']) + ")\n"
+                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + format_big_number(hero.max_military) + ")\n"
             else:
-                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
+                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(hero.military_growth)) + "%, " + format_big_number(hero.max_military) + ")\n"
             rank += 1
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
     if command_str.startswith(command_names.FORTUNE_TIER_LIST):
@@ -350,9 +257,9 @@ async def on_message(message):
         if difficulty < 0:
             return
         if attributes:
-            tier_list = create_attributes_tier_list(MAX_FORTUNE, difficulty, 20)
+            tier_list = hero_collection.create_attributes_tier_list(hero_collection.TierList.FORTUNE, difficulty, 20)
         else:
-            tier_list = create_growth_tier_list(FORTUNE_GROWTH, difficulty, 20)
+            tier_list = hero_collection.create_growth_tier_list(hero_collection.TierList.FORTUNE, difficulty, 20)
 
         difficulty_type = ""
         if difficulty is LOW_VIP_DIFFICULTY:
@@ -366,9 +273,9 @@ async def on_message(message):
         rank = 1
         for hero in tier_list:
             if attributes:
-                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero['Attributes']) + ")\n"
+                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + format_big_number(hero.max_fortune) + ")\n"
             else:
-                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
+                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(hero.fortune_growth)) + "%, " + format_big_number(hero.max_fortune) + ")\n"
             rank += 1
             
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
@@ -377,9 +284,9 @@ async def on_message(message):
         if difficulty < 0:
             return
         if attributes:
-            tier_list = create_attributes_tier_list(MAX_PROVISIONS, difficulty, 20)
+            tier_list = hero_collection.create_attributes_tier_list(hero_collection.TierList.PROVISIONS, difficulty, 20)
         else:
-            tier_list = create_growth_tier_list(PROVISIONS_GROWTH, difficulty, 20)
+            tier_list = hero_collection.create_growth_tier_list(hero_collection.TierList.PROVISIONS, difficulty, 20)
 
         difficulty_type = ""
         if difficulty is LOW_VIP_DIFFICULTY:
@@ -393,9 +300,9 @@ async def on_message(message):
         rank = 1
         for hero in tier_list:
             if attributes:
-                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero['Attributes']) + ")\n"
+                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + format_big_number(hero.max_provisions) + ")\n"
             else:
-                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
+                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(hero.provisions_growth)) + "%, " + format_big_number(hero.max_provisions) + ")\n"
             rank += 1
 
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
@@ -404,9 +311,9 @@ async def on_message(message):
         if difficulty < 0:
             return
         if attributes:
-            tier_list = create_attributes_tier_list(MAX_INSPIRATION, difficulty, 20)
+            tier_list = hero_collection.create_attributes_tier_list(hero_collection.TierList.INSPIRATION, difficulty, 20)
         else:
-            tier_list = create_growth_tier_list(INSPIRATION_GROWTH, difficulty, 20)
+            tier_list = hero_collection.create_growth_tier_list(hero_collection.TierList.INSPIRATION, difficulty, 20)
 
         difficulty_type = ""
         if difficulty is LOW_VIP_DIFFICULTY:
@@ -420,16 +327,11 @@ async def on_message(message):
         rank = 1
         for hero in tier_list:
             if attributes:
-                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + format_big_number(hero['Attributes']) + ")\n"
+                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + format_big_number(hero.max_inspiration) + ")\n"
             else:
-                tier_list_str += str(rank) + ". " + hero['Hero Name'] + " (" + str(round(hero['Growth'])) + "%, " + format_big_number(hero['Attributes']) + ")\n"
+                tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(hero.inspiration_growth)) + "%, " + format_big_number(hero.max_inspiration) + ")\n"
             rank += 1
         await message.channel.send(tier_list_str + "\n" + DM_BOT_MSG)
-    
-
-def create_growth_tier_list(type, difficulty, cutoff):
-    growths = get_sorted_growths(type, difficulty)
-    return list(growths)[:cutoff]
 
 async def send_message_to_channel(channel_id, message, publish = False):
     channel = await client.fetch_channel(channel_id)
