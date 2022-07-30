@@ -65,7 +65,7 @@ def hero_rank(hero_name, type: TierList):
 
 def get_hero(hero_name):
     matches = list(filter(lambda k: (k.hero_name.lower() == hero_name.lower()), _heros))
-    return matches if matches else None
+    return matches[0] if matches else None
 
 def hero_name_diff(command_hero_name):
     heroes = []

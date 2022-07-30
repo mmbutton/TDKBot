@@ -1,6 +1,28 @@
-from command import command_names
+
 from pathlib import Path
 import discord
+from math import log10, floor
+
+from command import command_names
+from hero import hero_collection
+
+DM_BOT_MSG = "For longer commands consider DMing the bot to avoid flooding the chat."
+#This should become private at some point
+# Rounds to 3 sig figs similar to KT. Ie: 1.56M instead of 1,562,020... I hate this thing
+round_3sigfig = lambda n: '{:,g}'.format(round(n, 3-int(floor(log10(abs(n))))-1))
+def format_big_number(num):
+    suffixes = ["", "K", "M", "B", "T", "Q"]
+    first_numbers = float("{:.2e}".format(int(num))[:4])
+
+    num = "{:,}".format(int(num))
+    if len(num.split(',')[0]) == 2:
+        first_numbers = float(first_numbers) * 10
+    elif len(num.split(',')[0]) == 3:
+        first_numbers = float(first_numbers) * 100
+    return round_3sigfig(first_numbers) + suffixes[num.count(',')]
+
+# Converts numbers to their orindal (1st, second etc)
+_ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(n//10%10!=1)*(n%10<4)*n%10::4])
 
 async def formulas(message):
     return await message.channel.send(file=discord.File(Path(__file__).parent / '../../resources/formulas.png'))
@@ -16,6 +38,39 @@ async def event_schedule(message):
 
 async def manuscript_efficiency(message):
     return await message.channel.send(file=discord.File(Path(__file__).parent / '../../resources/manu_efficiency.png'))
+
+async def hero(message, hero, detailed):
+    entry = hero_collection.get_hero(hero)
+    if entry is not None:
+        ranks = [
+                _ordinal(hero_collection.hero_rank(hero, hero_collection.TierList.KP)),
+                _ordinal(hero_collection.hero_rank(hero, hero_collection.TierList.POWER)),
+                _ordinal(hero_collection.hero_rank(hero, hero_collection.TierList.MILITARY)),
+                _ordinal(hero_collection.hero_rank(hero, hero_collection.TierList.FORTUNE)),
+                _ordinal(hero_collection.hero_rank(hero, hero_collection.TierList.PROVISIONS)),
+                _ordinal(hero_collection.hero_rank(hero, hero_collection.TierList.INSPIRATION))
+        ]
+        if detailed:
+            response_str = "**{0}**\n".format(entry.hero_name)
+            response_str = response_str + "```Max Attributes (lvl 400)\nMax Power {0} | Max KP {1} | Max Military {2} | Max Fortune {3} | Max Provisions {4} | Max Inspiration {5})```"\
+                .format(format_big_number(entry.max_power), format_big_number(entry.max_kp), format_big_number(entry.max_military), format_big_number(entry.max_fortune), format_big_number(entry.max_provisions), format_big_number(entry.max_inspiration))
+            response_str = response_str + "```Base Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
+                .format(entry.military_quality, entry.fortune_quality, entry.provisions_quality, entry.inspiration_quality)
+            response_str = response_str + "```Quality Efficiency %\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
+                .format(entry.military_growth, entry.fortune_growth, entry.provisions_growth, entry.inspiration_growth)
+            response_str = response_str + "```Paragon % (Tome efficiency)\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
+                .format(int(entry.military_paragon * 100), int(entry.fortune_paragon * 100), int(entry.provisions_paragon * 100), int(entry.inspiration_paragon * 100))
+            response_str = response_str + "```\nRank (KP | Power)\n Max KP {0} | Power {1}```"\
+                .format(ranks[0], ranks[1])
+            response_str = response_str + "```\nRank (Quality Efficiency)\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
+                .format(ranks[2], ranks[3], ranks[4], ranks[5])
+            response_str = response_str + "\n" + DM_BOT_MSG
+            await message.channel.send(response_str)
+        else:
+            await message.channel.send("**{0}**\n ```Max KP Rating: {1} | Max Power Rating: {2} | Military Growth Rank: {3} | Fortune Growth Rank: {4} | Provisions Growth Rank: {5} | Inspiration Growth Rank: {6} | Difficulty {7}```".format(entry.hero_name, ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], ranks[5], entry.difficulty))
+    else:
+        diffs = hero_collection.hero_name_diff(hero)
+        await message.channel.send("Hero " + hero + " not found. Close hero names: " + str(diffs))
 
 async def help(message):
     helpStr = '**______Command List________**\n'
