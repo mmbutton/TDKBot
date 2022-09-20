@@ -143,8 +143,7 @@ def friday_notifier():
     cross_server_notifier()
 
 def boss_notifier():
-    channel = client.get_channel(int(os.getenv('BLOODLUST')))
-    asyncio.run_coroutine_threadsafe(channel.send('@everyone Bosses will be opened shortly. Please limit your hits to 10B power (ie: 5k points).'), client.loop)
+    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('GENERAL_CHAT')), '<@&' + os.getenv('BL_ALERTS') + '> Bosses will be opened shortly. Please limit your hits to 10B power (ie: 5k points)'), client.loop)
 
 def notifier_thread():
     # Get the timezone offset and figure out the offset from localtime (In a 24 hour context)
