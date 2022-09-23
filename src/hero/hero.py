@@ -7,7 +7,8 @@ def csv_float(str):
     return float(str) if str else 0
 
 # King Throne Quality efficiency formula which is Military Paragon % + Maiden Bond % + Military Paragon % * Maiden Bond % + 15% Bronze
-_calculate_growth = lambda n, m: int((n + m + n * m + 1.15) * 100)
+def _calculate_growth(n, m):
+    return int((n + m + n * m + 1.15) * 100)
 
 class Hero(object):
     def __init__(self, row):
@@ -17,7 +18,7 @@ class Hero(object):
         self.provisions_quality = csv_int(row['Provisions Quality'])
         self.inspiration_quality = csv_int(row['Inspiration Quality'])
         self.max_power = csv_int(row['Max Power'])
-        self.max_kp  = csv_int(row['Max KP'])
+        self.max_kp = csv_int(row['Max KP'])
         self.max_military = csv_int(row['Max Military'])
         self.max_fortune = csv_int(row['Max Fortune'])
         self.max_provisions = csv_int(row['Max Provisions'])

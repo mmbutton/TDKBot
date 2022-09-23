@@ -1,4 +1,11 @@
-import time, threading, signal, sys, pytz, asyncio, os, sched
+import time
+import threading
+import signal
+import sys
+import pytz
+import asyncio
+import os
+import sched
 from pathlib import Path
 from pytz import timezone
 from datetime import datetime, timezone
@@ -6,7 +13,7 @@ import glob
 import re
 import os
 
-#import redis
+# import redis
 import discord
 import schedule
 from dotenv import load_dotenv
@@ -15,18 +22,10 @@ from command import command_names, command
 from hero import hero_collection
 
 load_dotenv()
-#mem = redis.Redis()
+# mem = redis.Redis()
 
 # Dev tokens
 client = discord.Client()
-
-##############################################################################
-# Global 1 line functions
-
-
-# Growth is the coefficients from the KP formula (Paragon, Bond, Bronze)
-get_percent = lambda n: int(float(n) * 100)
-
 
 # Global variables
 SUNDAY = 0
@@ -37,9 +36,11 @@ THURSDAY = 4
 FRIDAY = 5
 SATURDAY = 6
 
+
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
+
 
 @client.event
 async def on_message(message):
@@ -47,10 +48,10 @@ async def on_message(message):
         return
 
     command_str = message.content.lower()
-    ## Debug
-    ##if command.startswith('!server'):
-        #await message.channel.send(mem.lrange("servers", 0, 0))
-    ## All servers commands
+    # Debug
+    # if command.startswith('!server'):
+    # await message.channel.send(mem.lrange("servers", 0, 0))
+    # All servers commands
     if command_str.startswith('!help'):
         await command.help(message)
     '''if command.startswith('!add_channel_to_notifications'):
@@ -60,10 +61,10 @@ async def on_message(message):
         if len(command) > 0:
            mem.set(str(message.guild.id), "<@&" + str(command + ">"))
         else:
-            mem.set(str(message.guild.id), "@everyone") 
+            mem.set(str(message.guild.id), "@everyone")
         mem.set(str(message.guild.id), message.channel.id)
         await message.channel.send("Added channel to notifications. Default is to ping everyone. Please add a roleId if you want to only ping a specific role.")
-'''
+    '''
     if command_str.startswith(command_names.FORMULAS):
         await command.formulas(message)
     if command_str.startswith(command_names.ZODIACS):
@@ -89,11 +90,13 @@ async def on_message(message):
     if command_str.startswith(command_names.INSPIRATION_TIER_LIST):
         await command.inspiration_tier_list(message, command_str)
 
-async def send_message_to_channel(channel_id, message, publish = False):
+
+async def send_message_to_channel(channel_id, message, publish=False):
     channel = await client.fetch_channel(channel_id)
     msg = await channel.send(message)
     if publish:
         await msg.publish()
+
 
 def jotun_notifier():
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('GENERAL_CHAT')), '<@&' + os.getenv('BL_ALERTS') + '> Jotun time'), client.loop)
@@ -104,6 +107,7 @@ def jotun_notifier():
 
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('S941')), '@everyone Jotun time'), client.loop)
 
+
 def jotun_minions_notifier():
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('GENERAL_CHAT')), '<@&' + os.getenv('BL_ALERTS') + '> Jotun\'s minions time'), client.loop)
 
@@ -113,37 +117,51 @@ def jotun_minions_notifier():
 
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('S941')), '@everyone Jotun\'s minions time'), client.loop)
 
+
 def server_reset_notifier():
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('COLLECTIVE')), '<@&' + os.getenv('COLLECTIVE_ALERTS') + '> Daily server rest will be in 15 minutes', True), client.loop)
 
-    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('MACKENZIE')), '@everyone Server will reset in 15 minutes. Be ready to collect your daily tithes and keep your maidens company!'), client.loop)
+    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('MACKENZIE')),
+                                     '@everyone Server will reset in 15 minutes. Be ready to collect your daily tithes and keep your maidens company!'), client.loop)
 
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('S941')), '@everyone Daily server rest will be in 15 minutes'), client.loop)
 
+
 def boss_free_for_all_notifier():
-    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('GENERAL_CHAT')), '<@&' + os.getenv('BL_ALERTS') + '> Bosses will be a free for all in 30 minutes. If you have not hit bosses today please get your points in now.'), client.loop)
+    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('GENERAL_CHAT')), '<@&' + os.getenv('BL_ALERTS')
+                                     + '> Bosses will be a free for all in 30 minutes. If you have not hit bosses today please get your points in now.'), client.loop)
+
 
 def cross_server_notifier():
-    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('GENERAL_CHAT')), '<@&' + os.getenv('BL_ALERTS') + '> New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
+    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('GENERAL_CHAT')), '<@&' + os.getenv('BL_ALERTS')
+                                     + '> New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
 
-    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('COLLECTIVE')), '<@&' + os.getenv('COLLECTIVE_ALERTS') + '> New cross server fight is open. Please deploy a hero in the alliance hall.', True), client.loop)
+    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('COLLECTIVE')), '<@&' + os.getenv('COLLECTIVE_ALERTS')
+                                     + '> New cross server fight is open. Please deploy a hero in the alliance hall.', True), client.loop)
 
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('MACKENZIE')), '@everyone A new cross server fight begins!!! Send your hero to battle in the alliance hall!'), client.loop)
 
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('S941')), '@everyone New cross server fight is open. Please deploy a hero in the alliance hall.'), client.loop)
 
 # This might be an awful way to do this but the scheduler daily run never updates after the first run.
+
+
 def monday_notifier():
     cross_server_notifier()
+
 
 def wednesday_notifier():
     cross_server_notifier()
 
+
 def friday_notifier():
     cross_server_notifier()
 
+
 def boss_notifier():
-    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('GENERAL_CHAT')), '<@&' + os.getenv('BL_ALERTS') + '> Bosses will be opened shortly. Please limit your hits to 10B power (ie: 5k points)'), client.loop)
+    asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('GENERAL_CHAT')), '<@&' + os.getenv('BL_ALERTS')
+                                     + '> Bosses will be opened shortly. Please limit your hits to 10B power (ie: 5k points)'), client.loop)
+
 
 def notifier_thread():
     # Get the timezone offset and figure out the offset from localtime (In a 24 hour context)
@@ -186,12 +204,13 @@ def notifier_thread():
         time.sleep(1)
         schedule.run_pending()
 
+
 def main():
     notifier = threading.Thread(target=notifier_thread)
     notifier.daemon = True
     notifier.start()
     client.run(os.getenv('DISCORD_TOKEN'))
 
-   
+
 if __name__ == "__main__":
-  main()
+    main()

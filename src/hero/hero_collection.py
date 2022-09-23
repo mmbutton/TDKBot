@@ -11,26 +11,25 @@ class TierList(enum.Enum):
     KP = 'Kingdom Power'
     POWER = 'Power'
 
+
 _heros = hero_util.get_all_heros_from_csv()
 
 
 def create_attributes_tier_list(type: TierList, difficulty, cutoff):
-    
     filtered_heros = filter(lambda k: (k.difficulty < difficulty), _heros)
     if type is TierList.MILITARY:
-        filtered_heros =  sorted(filtered_heros, key=lambda k: (k.max_military), reverse=True)
+        filtered_heros = sorted(filtered_heros, key=lambda k: (k.max_military), reverse=True)
     elif type is TierList.FORTUNE:
-        filtered_heros =  sorted(filtered_heros, key=lambda k: (k.max_fortune), reverse=True)
+        filtered_heros = sorted(filtered_heros, key=lambda k: (k.max_fortune), reverse=True)
     elif type is TierList.PROVISIONS:
-        filtered_heros =  sorted(filtered_heros, key=lambda k: (k.max_provisions), reverse=True)
+        filtered_heros = sorted(filtered_heros, key=lambda k: (k.max_provisions), reverse=True)
     elif type is TierList.INSPIRATION:
-        filtered_heros =  sorted(filtered_heros, key=lambda k: (k.max_inspiration), reverse=True)
+        filtered_heros = sorted(filtered_heros, key=lambda k: (k.max_inspiration), reverse=True)
     elif type is TierList.KP:
-        filtered_heros =  sorted(filtered_heros, key=lambda k: (k.max_kp), reverse=True)
+        filtered_heros = sorted(filtered_heros, key=lambda k: (k.max_kp), reverse=True)
     elif type is TierList.POWER:
-        filtered_heros =  sorted(filtered_heros, key=lambda k: (k.max_power), reverse=True)
+        filtered_heros = sorted(filtered_heros, key=lambda k: (k.max_power), reverse=True)
     return filtered_heros[:cutoff]
-    
 
 def create_growth_tier_list(type: TierList, difficulty, cutoff):
     filtered_heros = filter(lambda k: (k.difficulty < difficulty), _heros)
@@ -43,7 +42,6 @@ def create_growth_tier_list(type: TierList, difficulty, cutoff):
     elif type is TierList.INSPIRATION:
         filtered_heros = sorted(filtered_heros, key=lambda k: (k.inspiration_growth, k.max_inspiration), reverse=True)
     return filtered_heros[:cutoff]
-        
 
 def hero_rank(hero_name, type: TierList):
     if type is TierList.MILITARY:
