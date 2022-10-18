@@ -129,7 +129,7 @@ def server_reset_notifier():
 
 def boss_free_for_all_notifier():
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('GENERAL_CHAT')), '<@&' + os.getenv('BL_ALERTS')
-                                     + '> Bosses will be a free for all in 30 minutes. If you have not hit bosses today please get your points in now.'), client.loop)
+                                     + '> Bosses will be a free for all in 15 minutes. The invincible boss will be opened in 30min'), client.loop)
 
 
 def cross_server_notifier():
