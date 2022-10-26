@@ -11,6 +11,7 @@ from hero import hero_collection
 _LOW_VIP_DIFFICULTY = 4
 _NEW_PLAYER_DIFFICULTY = 3
 _DM_BOT_MSG = "For a longer list use the '-s' option. For instance \"!power_tier_list -s 25\". Please use DM's to the bot for long lists."
+_LONG_BOT_MSG = "For longer commands consider DMing the bot to avoid flooding the chat."
 
 
 # Rounds to 3 sig figs similar to KT. Ie: 1.56M instead of 1,562,020... I hate this thing
@@ -147,7 +148,7 @@ async def hero(message, command_str):
                 .format(ranks[0], ranks[1])
             response_str = response_str + "```\nRank (Quality Efficiency)\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
                 .format(ranks[2], ranks[3], ranks[4], ranks[5])
-            response_str = response_str + "\n" + _DM_BOT_MSG
+            response_str = response_str + "\n" + _LONG_BOT_MSG
             await message.channel.send(response_str)
         else:
             response_str = "**{0}**\n".format(entry.hero_name)
