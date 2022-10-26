@@ -10,7 +10,7 @@ from hero import hero_collection
 
 _LOW_VIP_DIFFICULTY = 4
 _NEW_PLAYER_DIFFICULTY = 3
-_DM_BOT_MSG = "For longer commands consider DMing the bot to avoid flooding the chat."
+_DM_BOT_MSG = "For a longer list use the '-s' option. For instance \"!power_tier_list -s 25\". Please use DM's to the bot for long lists."
 
 
 # Rounds to 3 sig figs similar to KT. Ie: 1.56M instead of 1,562,020... I hate this thing
@@ -30,18 +30,23 @@ async def parse_tier_list_args(message, prog, command):
         parser.add_argument('--new', '-n', action='store_true')
         parser.add_argument('--low_vip', '-l', action='store_true')
         parser.add_argument('--attributes', '-a', action='store_true')
+        parser.add_argument('--size', '-s', type=int)
         args = parser.parse_args(command.split()[1:])
 
         if args.new and args.low_vip:
             await message.channel.send("Can only specify one of new or low econ")
             return -1
 
+        listLength = 10
+        if args.size:
+            listLength = args.size
+
         difficulty = 101
         if args.new:
             difficulty = _NEW_PLAYER_DIFFICULTY
         if args.low_vip:
             difficulty = _LOW_VIP_DIFFICULTY
-        return difficulty, args.attributes
+        return difficulty, args.attributes, listLength
 
     except ArgumentParserError:
         await message.channel.send("Unknown arguments detected. Only \"-l\" flag for low_vip or \"-n\" for new players are accepted for arguments")
@@ -155,11 +160,11 @@ async def hero(message, command_str):
         await message.channel.send("Hero " + hero + " not found. Close hero names: " + str(diffs))
 
 async def power_tier_list(message, command_str):
-    difficulty, attributes = await parse_tier_list_args(message, command_names.POWER_TIER_LIST, command_str)
+    difficulty, attributes, listLength = await parse_tier_list_args(message, command_names.POWER_TIER_LIST, command_str)
     if difficulty < 0:
         return
     tier_list = hero_collection.create_attributes_tier_list(
-        hero_collection.TierList.POWER, difficulty, 20)
+        hero_collection.TierList.POWER, difficulty, listLength)
 
     tier_list_type = ""
     if difficulty is _LOW_VIP_DIFFICULTY:
@@ -178,7 +183,7 @@ async def power_tier_list(message, command_str):
     await message.channel.send(tier_list_str + "\n" + _DM_BOT_MSG)
 
 async def kp_tier_list(message, command_str):
-    difficulty, attributes = await parse_tier_list_args(message, command_names.KP_TIER_LIST, command_str)
+    difficulty, attributes, listLength = await parse_tier_list_args(message, command_names.KP_TIER_LIST, command_str)
     if difficulty < 0:
         return
 
@@ -191,7 +196,7 @@ async def kp_tier_list(message, command_str):
     tier_list_str = "**KP Tier List** " + difficulty_type + "\n"
 
     tier_list = hero_collection.create_attributes_tier_list(
-        hero_collection.TierList.KP, difficulty, 20)
+        hero_collection.TierList.KP, difficulty, listLength)
     rank = 1
     for hero in tier_list:
         tier_list_str += str(rank) + ". " + hero.hero_name + \
@@ -200,15 +205,15 @@ async def kp_tier_list(message, command_str):
     await message.channel.send(tier_list_str + "\n" + _DM_BOT_MSG)
 
 async def military_tier_list(message, command_str):
-    difficulty, attributes = await parse_tier_list_args(message, command_names.MILITARY_TIER_LIST, command_str)
+    difficulty, attributes, listLength = await parse_tier_list_args(message, command_names.MILITARY_TIER_LIST, command_str)
     if difficulty < 0:
         return
     if attributes:
         tier_list = hero_collection.create_attributes_tier_list(
-            hero_collection.TierList.MILITARY, difficulty, 20)
+            hero_collection.TierList.MILITARY, difficulty, listLength)
     else:
         tier_list = hero_collection.create_growth_tier_list(
-            hero_collection.TierList.MILITARY, difficulty, 20)
+            hero_collection.TierList.MILITARY, difficulty, listLength)
 
     difficulty_type = ""
     if difficulty is _LOW_VIP_DIFFICULTY:
@@ -232,15 +237,15 @@ async def military_tier_list(message, command_str):
     await message.channel.send(tier_list_str + "\n" + _DM_BOT_MSG)
 
 async def fortune_tier_list(message, command_str):
-    difficulty, attributes = await parse_tier_list_args(message, command_names.FORTUNE_TIER_LIST, command_str)
+    difficulty, attributes, listLength = await parse_tier_list_args(message, command_names.FORTUNE_TIER_LIST, command_str)
     if difficulty < 0:
         return
     if attributes:
         tier_list = hero_collection.create_attributes_tier_list(
-            hero_collection.TierList.FORTUNE, difficulty, 20)
+            hero_collection.TierList.FORTUNE, difficulty, listLength)
     else:
         tier_list = hero_collection.create_growth_tier_list(
-            hero_collection.TierList.FORTUNE, difficulty, 20)
+            hero_collection.TierList.FORTUNE, difficulty, listLength)
 
     difficulty_type = ""
     if difficulty is _LOW_VIP_DIFFICULTY:
@@ -265,15 +270,15 @@ async def fortune_tier_list(message, command_str):
     await message.channel.send(tier_list_str + "\n" + _DM_BOT_MSG)
 
 async def provisions_tier_list(message, command_str):
-    difficulty, attributes = await parse_tier_list_args(message, command_names.PROVISIONS_TIER_LIST, command_str)
+    difficulty, attributes, listLength = await parse_tier_list_args(message, command_names.PROVISIONS_TIER_LIST, command_str)
     if difficulty < 0:
         return
     if attributes:
         tier_list = hero_collection.create_attributes_tier_list(
-            hero_collection.TierList.PROVISIONS, difficulty, 20)
+            hero_collection.TierList.PROVISIONS, difficulty, listLength)
     else:
         tier_list = hero_collection.create_growth_tier_list(
-            hero_collection.TierList.PROVISIONS, difficulty, 20)
+            hero_collection.TierList.PROVISIONS, difficulty, listLength)
 
     difficulty_type = ""
     if difficulty is _LOW_VIP_DIFFICULTY:
@@ -298,15 +303,15 @@ async def provisions_tier_list(message, command_str):
     await message.channel.send(tier_list_str + "\n" + _DM_BOT_MSG)
 
 async def inspiration_tier_list(message, command_str):
-    difficulty, attributes = await parse_tier_list_args(message, command_names.INSPIRATION_TIER_LIST, command_str)
+    difficulty, attributes, listLength = await parse_tier_list_args(message, command_names.INSPIRATION_TIER_LIST, command_str)
     if difficulty < 0:
         return
     if attributes:
         tier_list = hero_collection.create_attributes_tier_list(
-            hero_collection.TierList.INSPIRATION, difficulty, 20)
+            hero_collection.TierList.INSPIRATION, difficulty, listLength)
     else:
         tier_list = hero_collection.create_growth_tier_list(
-            hero_collection.TierList.INSPIRATION, difficulty, 20)
+            hero_collection.TierList.INSPIRATION, difficulty, listLength)
 
     difficulty_type = ""
     if difficulty is _LOW_VIP_DIFFICULTY:
