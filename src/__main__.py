@@ -145,7 +145,6 @@ def cross_server_notifier():
 
 # This might be an awful way to do this but the scheduler daily run never updates after the first run.
 
-
 def monday_notifier():
     cross_server_notifier()
 

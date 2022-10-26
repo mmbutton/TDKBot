@@ -145,8 +145,11 @@ async def hero(message, command_str):
             response_str = response_str + "\n" + _DM_BOT_MSG
             await message.channel.send(response_str)
         else:
-            await message.channel.send("**{0}**\n ```Max KP Rating: {1} | Max Power Rating: {2} | Military Growth Rank: {3} | Fortune Growth Rank: {4} | Provisions Growth Rank: {5} | "
-                                       + "Inspiration Growth Rank: {6} | Difficulty {7}```".format(entry.hero_name, ranks[0], ranks[1], ranks[2], ranks[3], ranks[4], ranks[5], entry.difficulty))
+            response_str = "**{0}**\n".format(entry.hero_name)
+            response_str = response_str + "```Max KP Rating: {0} | Max Power Rating: {1} | Military Growth Rank: {2} | Fortune Growth Rank: {3} | Provisions Growth Rank: {4} |"\
+                .format(ranks[0], ranks[1], ranks[2], ranks[3], ranks[4])
+            response_str = response_str + "Inspiration Growth Rank: {0} | Difficulty {1}```".format(ranks[5], entry.difficulty)
+            await message.channel.send(response_str)
     else:
         diffs = hero_collection.hero_name_diff(hero)
         await message.channel.send("Hero " + hero + " not found. Close hero names: " + str(diffs))
