@@ -11,6 +11,7 @@ from hero import hero_collection
 _LOW_VIP_DIFFICULTY = 4
 _NEW_PLAYER_DIFFICULTY = 3
 _DM_BOT_MSG = "For a longer list use the '-s' option. For instance \"!power_tier_list -s 25\". Please use DM's to the bot for long lists."
+_LONG_BOT_LIST_MSG = "List is too large and will likely flood whatever channel you are using. Please switch to a DM or reduce the size of the list you are generating."
 _LONG_BOT_MSG = "For longer commands consider DMing the bot to avoid flooding the chat."
 
 
@@ -79,6 +80,12 @@ def _format_big_number(num):
     elif len(num.split(',')[0]) == 3:
         first_numbers = float(first_numbers) * 100
     return _round_3sigfig(first_numbers) + suffixes[num.count(',')]
+
+async def _send_long_string_msg(discordMessage, messageString):
+    if discordMessage.channel.type != discord.ChannelType.private and len(messageString) > 1000:
+        await discordMessage.send(_LONG_BOT_LIST_MSG)
+    for chunk in [messageString[i: i + 1999] for i in range(0, len(messageString), 1999)]:
+        await discordMessage.channel.send(chunk)
 
 # Converts numbers to their orindal (1st, second etc)
 def _ordinal(n):
@@ -176,12 +183,12 @@ async def power_tier_list(message, command_str):
     tier_list_str = "**Power Tier List**" + tier_list_type + "\n"
 
     rank = 1
-    for hero in tier_list[:20]:
+    for hero in tier_list:
         tier_list_str += str(rank) + ". " + hero.hero_name + \
             " (" + _format_big_number(hero.max_power) + ")\n"
         rank += 1
 
-    await message.channel.send(tier_list_str + "\n" + _DM_BOT_MSG)
+    await _send_long_string_msg(message, tier_list_str + "\n" + _DM_BOT_MSG)
 
 async def kp_tier_list(message, command_str):
     difficulty, attributes, listLength = await parse_tier_list_args(message, command_names.KP_TIER_LIST, command_str)
@@ -203,7 +210,7 @@ async def kp_tier_list(message, command_str):
         tier_list_str += str(rank) + ". " + hero.hero_name + \
             " (" + _format_big_number(hero.max_kp) + ")\n"
         rank += 1
-    await message.channel.send(tier_list_str + "\n" + _DM_BOT_MSG)
+    await message.channel.send(message, tier_list_str + "\n" + _DM_BOT_MSG)
 
 async def military_tier_list(message, command_str):
     difficulty, attributes, listLength = await parse_tier_list_args(message, command_names.MILITARY_TIER_LIST, command_str)
@@ -235,7 +242,7 @@ async def military_tier_list(message, command_str):
             tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(
                 hero.military_growth)) + "%, " + _format_big_number(hero.max_military) + ")\n"
         rank += 1
-    await message.channel.send(tier_list_str + "\n" + _DM_BOT_MSG)
+    await _send_long_string_msg(message, tier_list_str + "\n" + _DM_BOT_MSG)
 
 async def fortune_tier_list(message, command_str):
     difficulty, attributes, listLength = await parse_tier_list_args(message, command_names.FORTUNE_TIER_LIST, command_str)
@@ -268,7 +275,7 @@ async def fortune_tier_list(message, command_str):
                 hero.fortune_growth)) + "%, " + _format_big_number(hero.max_fortune) + ")\n"
         rank += 1
 
-    await message.channel.send(tier_list_str + "\n" + _DM_BOT_MSG)
+    await _send_long_string_msg(message, tier_list_str + "\n" + _DM_BOT_MSG)
 
 async def provisions_tier_list(message, command_str):
     difficulty, attributes, listLength = await parse_tier_list_args(message, command_names.PROVISIONS_TIER_LIST, command_str)
@@ -301,7 +308,7 @@ async def provisions_tier_list(message, command_str):
                 hero.provisions_growth)) + "%, " + _format_big_number(hero.max_provisions) + ")\n"
         rank += 1
 
-    await message.channel.send(tier_list_str + "\n" + _DM_BOT_MSG)
+    await _send_long_string_msg(message, tier_list_str + "\n" + _DM_BOT_MSG)
 
 async def inspiration_tier_list(message, command_str):
     difficulty, attributes, listLength = await parse_tier_list_args(message, command_names.INSPIRATION_TIER_LIST, command_str)
@@ -333,7 +340,7 @@ async def inspiration_tier_list(message, command_str):
             tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(
                 hero.inspiration_growth)) + "%, " + _format_big_number(hero.max_inspiration) + ")\n"
         rank += 1
-    await message.channel.send(tier_list_str + "\n" + _DM_BOT_MSG)
+    await _send_long_string_msg(message, tier_list_str + "\n" + _DM_BOT_MSG)
 
 async def help(message):
     helpStr = '**______Command List________**\n'
