@@ -83,7 +83,7 @@ def _format_big_number(num):
 
 async def _send_long_string_msg(discordMessage, messageString):
     if discordMessage.channel.type != discord.ChannelType.private and len(messageString) > 1000:
-        await discordMessage.send(_LONG_BOT_LIST_MSG)
+        await discordMessage.channel.send(_LONG_BOT_LIST_MSG)
     for chunk in [messageString[i: i + 1999] for i in range(0, len(messageString), 1999)]:
         await discordMessage.channel.send(chunk)
 
