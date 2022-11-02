@@ -211,7 +211,7 @@ async def kp_tier_list(message, command_str):
         tier_list_str += str(rank) + ". " + hero.hero_name + \
             " (" + _format_big_number(hero.max_kp) + ")\n"
         rank += 1
-    await message.channel.send(message, tier_list_str + "\n" + _DM_BOT_MSG)
+    await _send_long_string_msg(message, tier_list_str + "\n" + _DM_BOT_MSG)
 
 async def military_tier_list(message, command_str):
     difficulty, attributes, listLength = await parse_tier_list_args(message, command_names.MILITARY_TIER_LIST, command_str)
