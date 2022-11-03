@@ -129,9 +129,9 @@ async def hero(message, command_str):
     if entry is not None:
         ranks = [
             ordinal(hero_collection.hero_rank(
-                hero, hero_collection.TierList.KP)),
+                hero, hero_collection.TierList.KINGDOM_POWER)),
             ordinal(hero_collection.hero_rank(
-                hero, hero_collection.TierList.POWER)),
+                hero, hero_collection.TierList.MILITARY_POWER)),
             ordinal(hero_collection.hero_rank(
                 hero, hero_collection.TierList.MILITARY)),
             ordinal(hero_collection.hero_rank(
@@ -173,7 +173,7 @@ async def power_tier_list(message, command_str):
     if difficulty < 0:
         return
     tier_list = hero_collection.create_attributes_tier_list(
-        hero_collection.TierList.POWER, difficulty, listLength)
+        hero_collection.TierList.MILITARY_POWER, difficulty, listLength)
 
     tier_list_type = ""
     if difficulty is _LOW_VIP_DIFFICULTY:
@@ -205,7 +205,7 @@ async def kp_tier_list(message, command_str):
     tier_list_str = "**KP Tier List** " + difficulty_type + "\n"
 
     tier_list = hero_collection.create_attributes_tier_list(
-        hero_collection.TierList.KP, difficulty, listLength)
+        hero_collection.TierList.KINGDOM_POWER, difficulty, listLength)
     rank = 1
     for hero in tier_list:
         tier_list_str += str(rank) + ". " + hero.hero_name + \

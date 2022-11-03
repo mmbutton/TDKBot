@@ -77,9 +77,9 @@ async def hero(interaction, hero_name: str, detailed: bool = True):
     if entry is not None:
         ranks = [
             command.ordinal(hero_collection.hero_rank(
-                hero, hero_collection.TierList.KP)),
+                hero, hero_collection.TierList.KINGDOM_POWERP)),
             command.ordinal(hero_collection.hero_rank(
-                hero, hero_collection.TierList.POWER)),
+                hero, hero_collection.TierList.MILITARY_POWER)),
             command.ordinal(hero_collection.hero_rank(
                 hero, hero_collection.TierList.MILITARY)),
             command.ordinal(hero_collection.hero_rank(
@@ -184,6 +184,7 @@ async def on_message(message):
         return
 
     command_str = message.content.lower()
+    print(command_str)
     # Debug
     # if command.startswith('!server'):
     # await message.channel.send(mem.lrange("servers", 0, 0))
