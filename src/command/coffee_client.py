@@ -18,6 +18,5 @@ class CoffeeClient(discord.Client):
     # By doing so, we don't have to wait up to an hour until they are shown to the end-user.
     async def setup_hook(self):
         # This copies the global commands over to your guild.
-        self.tree.copy_global_to()
         await self.tree.sync()
         

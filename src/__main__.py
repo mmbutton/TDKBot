@@ -18,7 +18,7 @@ import enum
 import discord
 from discord import app_commands
 import schedule
-from dotenv import load_dotenv
+from dotenv import main
 
 from command import command_names, command
 from command.coffee_client import CoffeeClient
@@ -26,7 +26,7 @@ from hero import hero_collection
 
 client = CoffeeClient()
 
-load_dotenv()
+main.load_dotenv()
 # mem = redis.Redis()
 
 # Global variables
