@@ -24,7 +24,9 @@ from command import command_names, command
 from command.coffee_client import CoffeeClient
 from hero import hero_collection
 
-client = CoffeeClient()
+intents = discord.Intents.default()
+intents.message_content = True
+client = CoffeeClient(intents=intents)
 
 main.load_dotenv()
 # mem = redis.Redis()
@@ -77,7 +79,7 @@ async def hero(interaction, hero_name: str, detailed: bool = True):
     if entry is not None:
         ranks = [
             command.ordinal(hero_collection.hero_rank(
-                hero, hero_collection.TierList.KINGDOM_POWER)),
+                hero, hero_collection.TierList.KINGDOM_POWERP)),
             command.ordinal(hero_collection.hero_rank(
                 hero, hero_collection.TierList.MILITARY_POWER)),
             command.ordinal(hero_collection.hero_rank(
