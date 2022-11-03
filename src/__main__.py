@@ -12,20 +12,22 @@ from datetime import datetime, timezone
 import glob
 import re
 import os
+import enum
 
 # import redis
 import discord
+from discord import app_commands
 import schedule
 from dotenv import load_dotenv
 
 from command import command_names, command
+from command.coffee_client import CoffeeClient
 from hero import hero_collection
+
+client = CoffeeClient()
 
 load_dotenv()
 # mem = redis.Redis()
-
-# Dev tokens
-client = discord.Client()
 
 # Global variables
 SUNDAY = 0
@@ -36,6 +38,140 @@ THURSDAY = 4
 FRIDAY = 5
 SATURDAY = 6
 
+@client.tree.command(description="Pulls up a formula sheet with a bunch of useful formulas such as KP, power etc.")
+async def formulas(interaction):
+    await interaction.response.send_message(file=discord.File(Path(__file__).parent / '../resources/formulas.png'))
+    
+@client.tree.command(description="Pulls up a screenshot showing Zodiacs, their maidens and their paragons.")
+async def zodiacs(interaction):
+    await interaction.response.send_message(file=discord.File(Path(__file__).parent / '../resources/zodiacs.png'))
+
+@client.tree.command(description = "Pulls up a screenshot of all current castle skins and their effects.")
+async def castle_skins(interaction):
+    await interaction.response.send_message(file=discord.File(Path(__file__).parent / '../resources/castle_skins.png'))
+    
+@client.tree.command(description = "Posts an image of the event schedule for challenges and cross server events.")
+async def event_schedule(interaction):
+    await interaction.response.send_message(file=discord.File(Path(__file__).parent / '../resources/event_schedule.png'))
+    
+@client.tree.command(description = "Pulls up Haka\'s inforgraphic showing manuscript batch efficiency")
+async def manuscript_efficiency(interaction):
+    await interaction.response.send_message(file=discord.File(Path(__file__).parent / '../resources/manu_efficiency.png'))
+    
+@client.tree.command(description = "Get a hero inforgraphic created by Milo")
+@app_commands.describe(hero_name="Name of the hero to get")
+async def hero_infographic(interaction, hero_name: str):
+    hero_name = hero_name.replace('‘', '\'').replace('’', '\'').lower()
+    filename = command.get_hero_inforgraphic(hero_name)
+    if filename is not None:
+        await interaction.response.send_message(file=discord.File(Path(__file__).parent / filename))
+    else:
+        diffs = hero_collection.hero_name_diff(command_str.lower())
+        await interaction.response.send_message("Hero " + command_str + " not found. Close hero names: " + str(diffs))
+        
+@client.tree.command(description = "Get hero statistics")
+@app_commands.describe(hero_name="Name of the hero to get", detailed="Use detailed statistics")
+async def hero(interaction, hero_name: str, detailed: bool = True):
+    hero = hero_name.replace('‘', '\'').replace('’', '\'').lower()
+    entry = hero_collection.get_hero(hero)
+    if entry is not None:
+        ranks = [
+            command.ordinal(hero_collection.hero_rank(
+                hero, hero_collection.TierList.KP)),
+            command.ordinal(hero_collection.hero_rank(
+                hero, hero_collection.TierList.POWER)),
+            command.ordinal(hero_collection.hero_rank(
+                hero, hero_collection.TierList.MILITARY)),
+            command.ordinal(hero_collection.hero_rank(
+                hero, hero_collection.TierList.FORTUNE)),
+            command.ordinal(hero_collection.hero_rank(
+                hero, hero_collection.TierList.PROVISIONS)),
+            command.ordinal(hero_collection.hero_rank(
+                hero, hero_collection.TierList.INSPIRATION))
+        ]
+        if detailed:
+            response_str = "**{0}**\n".format(entry.hero_name)
+            response_str = response_str + "```Max Attributes (lvl 400)\nMax Power {0} | Max KP {1} | Max Military {2} | Max Fortune {3} | Max Provisions {4} | Max Inspiration {5})```"\
+                .format(command.format_big_number(entry.max_power), command.format_big_number(entry.max_kp), command.format_big_number(entry.max_military), command.format_big_number(entry.max_fortune),
+                        command.format_big_number(entry.max_provisions), command.format_big_number(entry.max_inspiration))
+            response_str = response_str + "```Base Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
+                .format(entry.military_quality, entry.fortune_quality, entry.provisions_quality, entry.inspiration_quality)
+            response_str = response_str + "```Quality Efficiency %\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
+                .format(entry.military_growth, entry.fortune_growth, entry.provisions_growth, entry.inspiration_growth)
+            response_str = response_str + "```Paragon % (Tome efficiency)\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
+                .format(int(entry.military_paragon * 100), int(entry.fortune_paragon * 100), int(entry.provisions_paragon * 100), int(entry.inspiration_paragon * 100))
+            response_str = response_str + "```\nRank (KP | Power)\n Max KP {0} | Power {1}```"\
+                .format(ranks[0], ranks[1])
+            response_str = response_str + "```\nRank (Quality Efficiency)\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
+                .format(ranks[2], ranks[3], ranks[4], ranks[5])
+            response_str = response_str + "\n" + command._LONG_BOT_MSG
+            await interaction.response.send_message(response_str)
+        else:
+            response_str = "**{0}**\n".format(entry.hero_name)
+            response_str = response_str + "```Max KP Rating: {0} | Max Power Rating: {1} | Military Growth Rank: {2} | Fortune Growth Rank: {3} | Provisions Growth Rank: {4} |"\
+                .format(ranks[0], ranks[1], ranks[2], ranks[3], ranks[4])
+            response_str = response_str + "Inspiration Growth Rank: {0} | Difficulty {1}```".format(ranks[5], entry.difficulty)
+            await interaction.response.send_message(response_str)
+    else:
+        diffs = hero_collection.hero_name_diff(hero)
+        await interaction.response.send_message("Hero " + hero + " not found. Close hero names: " + str(diffs))
+
+@client.tree.command(description = "Generate a tier list based on max attributes of heroes")
+@app_commands.describe(type="Type of tier list to generate", size="Size of the tier list")
+async def attribute_tier_list(interaction, type: hero_collection.TierList, size: app_commands.Range[int, 0, 200] = 10):
+    tier_list = hero_collection.create_attributes_tier_list(type, 100, size)
+    tier_list_str = "**{0} Attribute Tier List**\n".format(type.value)
+
+    rank = 1
+    for hero in tier_list:
+        if type is hero_collection.TierList.MILITARY:
+            attribute = hero.max_military
+        elif type is hero_collection.TierList.FORTUNE:
+            attribute = hero.max_fortune
+        elif type is hero_collection.TierList.PROVISIONS:
+            attribute = hero.max_provisions
+        elif type is hero_collection.TierList.INSPIRATION:
+            attribute = hero.max_inspiration
+        elif type is hero_collection.TierList.KINGDOM_POWER:
+            attribute = hero.max_kp
+        elif type is hero_collection.TierList.MILITARY_POWER:
+            attribute = hero.max_power
+        tier_list_str += "{0}. {1} ({2})\n".format(rank, hero.hero_name, command.format_big_number(attribute))
+        rank += 1
+
+    await interaction.response.send_message(tier_list_str + "\n" + command._LONG_BOT_MSG)
+
+class TierListGrowths(enum.Enum):
+    MILITARY = hero_collection.TierList.MILITARY
+    FORTUNE = hero_collection.TierList.FORTUNE
+    PROVISIONS = hero_collection.TierList.PROVISIONS
+    INSPIRATION = hero_collection.TierList.INSPIRATION
+    
+    
+@client.tree.command(description = "Generate a tier list based on growth of heroes")
+@app_commands.describe(type="Type of tier list to generate", size="Size of the tier list")
+async def growth_tier_list(interaction, type: hero_collection.TierList, size: app_commands.Range[int, 0, 200] = 10):
+    tier_list = hero_collection.create_growth_tier_list(type, 100, size)
+    tier_list_str = "**{0} Growth Tier List**\n".format(type.value)
+
+    rank = 1
+    for hero in tier_list:
+        if type is hero_collection.TierList.MILITARY:
+            attribute = hero.max_military
+            growth = hero.military_growth
+        elif type is hero_collection.TierList.FORTUNE:
+            attribute = hero.max_fortune
+            growth = hero.fortune_growth
+        elif type is hero_collection.TierList.PROVISIONS:
+            attribute = hero.max_provisions
+            growth = hero.provisions_growth
+        elif type is hero_collection.TierList.INSPIRATION:
+            attribute = hero.max_inspiration
+            growth = hero.inspiration_growth
+        tier_list_str += "{0}. {1} ({2}%, {3})\n".format(rank, hero.hero_name, round(growth), command.format_big_number(attribute))
+        rank += 1
+
+    await interaction.response.send_message(tier_list_str + "\n" + command._LONG_BOT_MSG)
 
 @client.event
 async def on_ready():

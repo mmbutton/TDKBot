@@ -8,8 +8,8 @@ class TierList(enum.Enum):
     FORTUNE = 'Fortune'
     PROVISIONS = 'Provisions'
     INSPIRATION = 'Inspiration'
-    KP = 'Kingdom Power'
-    POWER = 'Power'
+    KINGDOM_POWER = 'Kingdom Power'
+    MILITARY_POWER = 'Military Power'
 
 
 _heros = hero_util.get_all_heros_from_csv()
@@ -25,9 +25,9 @@ def create_attributes_tier_list(type: TierList, difficulty, cutoff):
         filtered_heros = sorted(filtered_heros, key=lambda k: (k.max_provisions), reverse=True)
     elif type is TierList.INSPIRATION:
         filtered_heros = sorted(filtered_heros, key=lambda k: (k.max_inspiration), reverse=True)
-    elif type is TierList.KP:
+    elif type is TierList.KINGDOM_POWER:
         filtered_heros = sorted(filtered_heros, key=lambda k: (k.max_kp), reverse=True)
-    elif type is TierList.POWER:
+    elif type is TierList.MILITARY_POWER:
         filtered_heros = sorted(filtered_heros, key=lambda k: (k.max_power), reverse=True)
     return filtered_heros[:cutoff]
 
@@ -52,9 +52,9 @@ def hero_rank(hero_name, type: TierList):
         sorted_heroes = sorted(_heros, key=lambda k: int(k.provisions_growth), reverse=True)
     elif type is TierList.INSPIRATION:
         sorted_heroes = sorted(_heros, key=lambda k: int(k.inspiration_growth), reverse=True)
-    elif type is TierList.KP:
+    elif type is TierList.KINGDOM_POWER:
         sorted_heroes = sorted(_heros, key=lambda k: int(k.max_kp), reverse=True)
-    elif type is TierList.POWER:
+    elif type is TierList.MILITARY_POWER:
         sorted_heroes = sorted(_heros, key=lambda k: int(k.max_power), reverse=True)
 
     for i, sorted_heroes in enumerate(sorted_heroes):

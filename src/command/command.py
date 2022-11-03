@@ -25,7 +25,7 @@ class ArgumentParserError(Exception):
 class ThrowingArgumentParser(argparse.ArgumentParser):
     def error(self, message):
         raise ArgumentParserError(message)
-
+    
 async def parse_tier_list_args(message, prog, command):
     try:
         parser = ThrowingArgumentParser(prog, add_help=False)
@@ -54,7 +54,7 @@ async def parse_tier_list_args(message, prog, command):
         await message.channel.send("Unknown arguments detected. Only \"-l\" flag for low_vip or \"-n\" for new players are accepted for arguments")
         return -1, False
 
-def _get_hero_inforgraphic(hero_name):
+def get_hero_inforgraphic(hero_name):
     matches = []
     path = Path(__file__).parent / '../../resources/milo_infographics/*'
     for filename in glob.glob(str(path)):
@@ -70,7 +70,7 @@ def _get_hero_inforgraphic(hero_name):
     else:
         return min(matches, key=len)
 
-def _format_big_number(num):
+def format_big_number(num):
     suffixes = ["", "K", "M", "B", "T", "Q"]
     first_numbers = float("{:.2e}".format(int(num))[:4])
 
@@ -89,7 +89,7 @@ async def _send_long_string_msg(discordMessage, messageString):
         await discordMessage.channel.send(chunk)
 
 # Converts numbers to their orindal (1st, second etc)
-def _ordinal(n):
+def ordinal(n):
     return "%d%s" % (n, "tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10::4])
 
 async def formulas(message):
@@ -111,7 +111,7 @@ async def hero(message, command_str):
     command_str = command_str[(len(command_names.HERO) + 1):].replace('‘', '\'').replace('’', '\'')
     if command_str.startswith("-i"):
         command_str = command_str[3:]
-        filename = _get_hero_inforgraphic(command_str)
+        filename = get_hero_inforgraphic(command_str)
         if filename is not None:
             await message.channel.send(file=discord.File(Path(__file__).parent / filename))
         else:
@@ -128,24 +128,24 @@ async def hero(message, command_str):
     entry = hero_collection.get_hero(hero)
     if entry is not None:
         ranks = [
-            _ordinal(hero_collection.hero_rank(
+            ordinal(hero_collection.hero_rank(
                 hero, hero_collection.TierList.KP)),
-            _ordinal(hero_collection.hero_rank(
+            ordinal(hero_collection.hero_rank(
                 hero, hero_collection.TierList.POWER)),
-            _ordinal(hero_collection.hero_rank(
+            ordinal(hero_collection.hero_rank(
                 hero, hero_collection.TierList.MILITARY)),
-            _ordinal(hero_collection.hero_rank(
+            ordinal(hero_collection.hero_rank(
                 hero, hero_collection.TierList.FORTUNE)),
-            _ordinal(hero_collection.hero_rank(
+            ordinal(hero_collection.hero_rank(
                 hero, hero_collection.TierList.PROVISIONS)),
-            _ordinal(hero_collection.hero_rank(
+            ordinal(hero_collection.hero_rank(
                 hero, hero_collection.TierList.INSPIRATION))
         ]
         if detailed:
             response_str = "**{0}**\n".format(entry.hero_name)
             response_str = response_str + "```Max Attributes (lvl 400)\nMax Power {0} | Max KP {1} | Max Military {2} | Max Fortune {3} | Max Provisions {4} | Max Inspiration {5})```"\
-                .format(_format_big_number(entry.max_power), _format_big_number(entry.max_kp), _format_big_number(entry.max_military), _format_big_number(entry.max_fortune),
-                        _format_big_number(entry.max_provisions), _format_big_number(entry.max_inspiration))
+                .format(format_big_number(entry.max_power), format_big_number(entry.max_kp), format_big_number(entry.max_military), format_big_number(entry.max_fortune),
+                        format_big_number(entry.max_provisions), format_big_number(entry.max_inspiration))
             response_str = response_str + "```Base Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
                 .format(entry.military_quality, entry.fortune_quality, entry.provisions_quality, entry.inspiration_quality)
             response_str = response_str + "```Quality Efficiency %\n Military {0}% | Fortune {1}% | Provisions {2}% | Inspiration {3}%```"\
@@ -186,7 +186,7 @@ async def power_tier_list(message, command_str):
     rank = 1
     for hero in tier_list:
         tier_list_str += str(rank) + ". " + hero.hero_name + \
-            " (" + _format_big_number(hero.max_power) + ")\n"
+            " (" + format_big_number(hero.max_power) + ")\n"
         rank += 1
 
     await _send_long_string_msg(message, tier_list_str + "\n" + _DM_BOT_MSG)
@@ -209,7 +209,7 @@ async def kp_tier_list(message, command_str):
     rank = 1
     for hero in tier_list:
         tier_list_str += str(rank) + ". " + hero.hero_name + \
-            " (" + _format_big_number(hero.max_kp) + ")\n"
+            " (" + format_big_number(hero.max_kp) + ")\n"
         rank += 1
     await _send_long_string_msg(message, tier_list_str + "\n" + _DM_BOT_MSG)
 
@@ -238,10 +238,10 @@ async def military_tier_list(message, command_str):
     for hero in tier_list:
         if attributes:
             tier_list_str += str(rank) + ". " + hero.hero_name + \
-                " (" + _format_big_number(hero.max_military) + ")\n"
+                " (" + format_big_number(hero.max_military) + ")\n"
         else:
             tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(
-                hero.military_growth)) + "%, " + _format_big_number(hero.max_military) + ")\n"
+                hero.military_growth)) + "%, " + format_big_number(hero.max_military) + ")\n"
         rank += 1
     await _send_long_string_msg(message, tier_list_str + "\n" + _DM_BOT_MSG)
 
@@ -270,10 +270,10 @@ async def fortune_tier_list(message, command_str):
     for hero in tier_list:
         if attributes:
             tier_list_str += str(rank) + ". " + hero.hero_name + \
-                " (" + _format_big_number(hero.max_fortune) + ")\n"
+                " (" + format_big_number(hero.max_fortune) + ")\n"
         else:
             tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(
-                hero.fortune_growth)) + "%, " + _format_big_number(hero.max_fortune) + ")\n"
+                hero.fortune_growth)) + "%, " + format_big_number(hero.max_fortune) + ")\n"
         rank += 1
 
     await _send_long_string_msg(message, tier_list_str + "\n" + _DM_BOT_MSG)
@@ -303,10 +303,10 @@ async def provisions_tier_list(message, command_str):
     for hero in tier_list:
         if attributes:
             tier_list_str += str(rank) + ". " + hero.hero_name + \
-                " (" + _format_big_number(hero.max_provisions) + ")\n"
+                " (" + format_big_number(hero.max_provisions) + ")\n"
         else:
             tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(
-                hero.provisions_growth)) + "%, " + _format_big_number(hero.max_provisions) + ")\n"
+                hero.provisions_growth)) + "%, " + format_big_number(hero.max_provisions) + ")\n"
         rank += 1
 
     await _send_long_string_msg(message, tier_list_str + "\n" + _DM_BOT_MSG)
@@ -336,10 +336,10 @@ async def inspiration_tier_list(message, command_str):
     for hero in tier_list:
         if attributes:
             tier_list_str += str(rank) + ". " + hero.hero_name + \
-                " (" + _format_big_number(hero.max_inspiration) + ")\n"
+                " (" + format_big_number(hero.max_inspiration) + ")\n"
         else:
             tier_list_str += str(rank) + ". " + hero.hero_name + " (" + str(round(
-                hero.inspiration_growth)) + "%, " + _format_big_number(hero.max_inspiration) + ")\n"
+                hero.inspiration_growth)) + "%, " + format_big_number(hero.max_inspiration) + ")\n"
         rank += 1
     await _send_long_string_msg(message, tier_list_str + "\n" + _DM_BOT_MSG)
 
