@@ -77,7 +77,7 @@ async def hero(interaction, hero_name: str, detailed: bool = True):
     if entry is not None:
         ranks = [
             command.ordinal(hero_collection.hero_rank(
-                hero, hero_collection.TierList.KINGDOM_POWERP)),
+                hero, hero_collection.TierList.KINGDOM_POWER)),
             command.ordinal(hero_collection.hero_rank(
                 hero, hero_collection.TierList.MILITARY_POWER)),
             command.ordinal(hero_collection.hero_rank(
