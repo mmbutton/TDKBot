@@ -68,8 +68,8 @@ async def hero_infographic(interaction, hero_name: str):
     if filename is not None:
         await interaction.response.send_message(file=discord.File(Path(__file__).parent / filename))
     else:
-        diffs = hero_collection.hero_name_diff(command_str.lower())
-        await interaction.response.send_message("Hero " + command_str + " not found. Close hero names: " + str(diffs))
+        diffs = hero_collection.hero_name_diff(hero_name)
+        await interaction.response.send_message("Hero " + hero_name + " not found. Close hero names: " + str(diffs))
         
 @client.tree.command(description = "Get hero statistics")
 @app_commands.describe(hero_name="Name of the hero to get", detailed="Use detailed statistics")
@@ -79,7 +79,7 @@ async def hero(interaction, hero_name: str, detailed: bool = True):
     if entry is not None:
         ranks = [
             command.ordinal(hero_collection.hero_rank(
-                hero, hero_collection.TierList.KINGDOM_POWERP)),
+                hero, hero_collection.TierList.KINGDOM_POWER)),
             command.ordinal(hero_collection.hero_rank(
                 hero, hero_collection.TierList.MILITARY_POWER)),
             command.ordinal(hero_collection.hero_rank(
