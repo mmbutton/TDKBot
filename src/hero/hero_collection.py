@@ -1,6 +1,5 @@
-import csv, difflib, enum
+import difflib, enum
 
-from hero.hero import Hero
 from hero import hero_util
 
 class TierList(enum.Enum):
@@ -12,8 +11,7 @@ class TierList(enum.Enum):
     MILITARY_POWER = 'Military Power'
 
 
-_heros = hero_util.get_all_heros_from_csv()
-
+_heros = hero_util.get_all_heros_from_api()
 
 def create_attributes_tier_list(type: TierList, difficulty, cutoff):
     filtered_heros = filter(lambda k: (k.difficulty < difficulty), _heros)

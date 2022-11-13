@@ -1,16 +1,8 @@
 import time
 import threading
-import signal
-import sys
-import pytz
 import asyncio
 import os
-import sched
 from pathlib import Path
-from pytz import timezone
-from datetime import datetime, timezone
-import glob
-import re
 import os
 import enum
 
@@ -20,15 +12,18 @@ from discord import app_commands
 import schedule
 from dotenv import main
 
+# Dotenv must read the files before imports otherwise the .env variables will be None
+main.load_dotenv()
 from command import command_names, command
 from command.coffee_client import CoffeeClient
 from hero import hero_collection
+
+
 
 intents = discord.Intents.default()
 intents.message_content = True
 client = CoffeeClient(intents=intents)
 
-main.load_dotenv()
 # mem = redis.Redis()
 
 # Global variables
@@ -75,6 +70,7 @@ async def hero_infographic(interaction, hero_name: str):
 @app_commands.describe(hero_name="Name of the hero to get", detailed="Use detailed statistics")
 async def hero(interaction, hero_name: str, detailed: bool = True):
     hero = hero_name.replace('‘', '\'').replace('’', '\'').lower()
+    print(hero)
     entry = hero_collection.get_hero(hero)
     if entry is not None:
         ranks = [
@@ -186,7 +182,6 @@ async def on_message(message):
         return
 
     command_str = message.content.lower()
-    print(command_str)
     # Debug
     # if command.startswith('!server'):
     # await message.channel.send(mem.lrange("servers", 0, 0))

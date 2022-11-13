@@ -1,2 +1,4 @@
 .vscode/
 src/.env
+credentials.json
+token.json
