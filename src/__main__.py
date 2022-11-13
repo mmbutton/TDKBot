@@ -70,7 +70,6 @@ async def hero_infographic(interaction, hero_name: str):
 @app_commands.describe(hero_name="Name of the hero to get", detailed="Use detailed statistics")
 async def hero(interaction, hero_name: str, detailed: bool = True):
     hero = hero_name.replace('‘', '\'').replace('’', '\'').lower()
-    print(hero)
     entry = hero_collection.get_hero(hero)
     if entry is not None:
         ranks = [

@@ -21,8 +21,9 @@ def get_all_heros_from_api():
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
-    if os.path.exists(Path(__file__).parent / '../../token.json'):
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    tokenJsonPath = Path(__file__).parent / '../../token.json'
+    if os.path.exists(tokenJsonPath):
+        creds = Credentials.from_authorized_user_file(tokenJsonPath, SCOPES)
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
@@ -32,7 +33,7 @@ def get_all_heros_from_api():
                 Path(__file__).parent / '../../credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open(Path(__file__).parent / '../../token.json', 'w') as token:
+        with open(tokenJsonPath, 'w') as token:
             token.write(creds.to_json())
 
     try:
