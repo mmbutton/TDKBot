@@ -292,7 +292,7 @@ def friday_notifier():
 
 def boss_notifier():
     asyncio.run_coroutine_threadsafe(send_message_to_channel(int(os.getenv('GENERAL_CHAT')), '<@&' + os.getenv('BL_ALERTS')
-                                     + '> Bosses will be opened shortly. Please limit your hits to 10B power (ie: 5k points)'), client.loop)
+                                     + '> Bosses will be opened shortly. Please limit your hits to 30B power (ie: 15k points)'), client.loop)
 
 
 def notifier_thread():
