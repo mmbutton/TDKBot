@@ -21,7 +21,6 @@ from hero import hero_collection
 
 
 intents = discord.Intents.default()
-intents.message_content = True
 client = CoffeeClient(intents=intents)
 
 # mem = redis.Redis()
