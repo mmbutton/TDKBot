@@ -57,7 +57,7 @@ async def help(interaction):
     helpStr += 'All tier lists can use the low VIP "-l" or new player "-n" flags to create a tier list geared towards lower spenders or new players\n'
     helpStr += command_names.APP_GROWTH_TIER_LIST + ': Tier list of heroes based on how fast they grow when investing quality. Use Military, Provisions, etc. to see the list for that hero\n'
     helpStr += command_names.APP_ATTRIBUTE_TIER_LIST + ': Tier list for heroes based on the maximum attribute in each stat. Includes Military, provisions etc. but also includes KP and Power.\n'
-    await interaction.response.send(helpStr)
+    await interaction.response.send_message(helpStr)
 
 @client.tree.command(description="Pulls up a formula sheet with a bunch of useful formulas such as KP, power etc.")
 async def formulas(interaction):
@@ -189,6 +189,10 @@ async def growth_tier_list(interaction, type: hero_collection.TierList, size: ap
         elif type is hero_collection.TierList.INSPIRATION:
             attribute = hero.max_inspiration
             growth = hero.inspiration_growth
+        elif type is hero_collection.TierList.KINGDOM_POWER:
+            attribute = hero.max_kp
+        elif type is hero_collection.TierList.MILITARY_POWER:
+            attribute = hero.max_power
         tier_list_str += "{0}. {1} ({2}%, {3})\n".format(rank, hero.hero_name, round(growth), command.format_big_number(attribute))
         rank += 1
 
