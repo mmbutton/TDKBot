@@ -35,6 +35,31 @@ THURSDAY = 4
 FRIDAY = 5
 SATURDAY = 6
 
+@client.tree.command(description = "Show list of commands")
+async def help(interaction):
+    helpStr = '**______Command List________**\n'
+
+    # All server commands
+    helpStr += command_names.APP_EVENT_SCHEDULE + \
+        ': Posts an image of the event schedule for challenges and cross server events\n'
+    helpStr += command_names.APP_HERO + \
+        ': Shows the rating of the hero compared to others. Set detailed to True to see detailed stats \n'
+    helpStr += command_names.APP_HERO_INFOGRAPHIC + \
+        ": Displays Milo's infographic for a selected hero\n"
+    helpStr += command_names.APP_FORMULAS + \
+        ': Pulls up a formula sheet with a bunch of useful formulas such as KP, power etc.'
+    helpStr += command_names.APP_ZODIACS + \
+        ': Pulls up a screenshot showing Zodiacs, their maidens and their paragons.\n'
+    helpStr += command_names.APP_CASTLE_SKINS + \
+        ': Pulls up a screenshot of all current castle skins and there effects.\n'
+    helpStr += command_names.APP_MANU_EFFICIENCY + \
+        ': Pulls up Haka\'s inforgraphic showing manuscript batch efficiency\n'
+    helpStr += '---------------------------------------------------------------------------\n'
+    helpStr += 'All tier lists can use the low VIP "-l" or new player "-n" flags to create a tier list geared towards lower spenders or new players\n'
+    helpStr += command_names.APP_GROWTH_TIER_LIST + ': Tier list of heroes based on how fast they grow when investing quality. Use Military, Provisions, etc. to see the list for that hero\n'
+    helpStr += command_names.APP_ATTRIBUTE_TIER_LIST + ': Tier list for heroes based on the maximum attribute in each stat. Includes Military, provisions etc. but also includes KP and Power.\n'
+    await interaction.response.send(helpStr)
+
 @client.tree.command(description="Pulls up a formula sheet with a bunch of useful formulas such as KP, power etc.")
 async def formulas(interaction):
     await interaction.response.send_message(file=discord.File(Path(__file__).parent / '../resources/formulas.png'))

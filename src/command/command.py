@@ -347,30 +347,22 @@ async def help(message):
     helpStr = '**______Command List________**\n'
 
     # All server commands
-    helpStr += command_names.EVENT_SCHEDULE + \
+    helpStr += command_names.APP_EVENT_SCHEDULE + \
         ': Posts an image of the event schedule for challenges and cross server events\n'
-    helpStr += command_names.HERO + \
-        ': Shows the rating of the hero compared to others. Use -d to see fully detailed stats, use -i to pull up an infographic.\n'
-    helpStr += command_names.FORMULAS + \
+    helpStr += command_names.APP_HERO + \
+        ': Shows the rating of the hero compared to others. Set detailed to True to see detailed stats \n'
+    helpStr += command_names.APP_HERO_INFOGRAPHIC + \
+        ": Displays Milo's infographic for a selected hero\n"
+    helpStr += command_names.APP_FORMULAS + \
         ': Pulls up a formula sheet with a bunch of useful formulas such as KP, power etc.'
-    helpStr += command_names.ZODIACS + \
+    helpStr += command_names.APP_ZODIACS + \
         ': Pulls up a screenshot showing Zodiacs, their maidens and their paragons.\n'
-    helpStr += command_names.CASTLE_SKINS + \
+    helpStr += command_names.APP_CASTLE_SKINS + \
         ': Pulls up a screenshot of all current castle skins and there effects.\n'
-    helpStr += command_names.MANU_EFFICIENCY + \
+    helpStr += command_names.APP_MANU_EFFICIENCY + \
         ': Pulls up Haka\'s inforgraphic showing manuscript batch efficiency\n'
     helpStr += '---------------------------------------------------------------------------\n'
     helpStr += 'All tier lists can use the low VIP "-l" or new player "-n" flags to create a tier list geared towards lower spenders or new players\n'
-    helpStr += command_names.KP_TIER_LIST + ': Tier list for heroes maximum KP\n'
-    helpStr += command_names.POWER_TIER_LIST + \
-        ': Tier list for the strongest hero\'s rated by maximum power\n'
-    helpStr += command_names.MILITARY_TIER_LIST + \
-        ': Tier list for military growth. Use -a to switch to attributes\n'
-    helpStr += command_names.FORTUNE_TIER_LIST + \
-        ': Tier list for fortune growth. Use -a to switch to attributes\n'
-    helpStr += command_names.PROVISIONS_TIER_LIST + \
-        ': Tier list for provisions growth. Use -a to switch to attributes\n'
-    helpStr += command_names.INSPIRATION_TIER_LIST + \
-        ': Tier list for inspiration growth. Use -a to switch to attributes\n'
-    helpStr += 'You can send any of these commands to the bot by messaging it directly. Please consider doing so unless you\'re discussing the hero in the channel\n'
+    helpStr += command_names.APP_GROWTH_TIER_LIST + ': Tier list of heroes based on how fast they grow when investing quality. Use Military, Provisions, etc. to see the list for that hero\n'
+    helpStr += command_names.APP_ATTRIBUTE_TIER_LIST + ': Tier list for heroes based on the maximum attribute in each stat. Includes Military, provisions etc. but also includes KP and Power.\n'
     await message.channel.send(helpStr)
