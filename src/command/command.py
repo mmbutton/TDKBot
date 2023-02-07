@@ -143,7 +143,7 @@ async def hero(message, command_str):
         ]
         if detailed:
             response_str = "**{0}**\n".format(entry.hero_name)
-            response_str = response_str + "```Max Attributes (lvl 400)\nMax Power {0} | Max KP {1} | Max Military {2} | Max Fortune {3} | Max Provisions {4} | Max Inspiration {5})```"\
+            response_str = response_str + "```Max Attributes (lvl 400)\nMax Power {0} | Max KP {1} | Max Military {2} | Max Fortune {3} | Max Provisions {4} | Max Inspiration {5}```"\
                 .format(format_big_number(entry.max_power), format_big_number(entry.max_kp), format_big_number(entry.max_military), format_big_number(entry.max_fortune),
                         format_big_number(entry.max_provisions), format_big_number(entry.max_inspiration))
             response_str = response_str + "```Base Quality\n Military {0} | Fortune {1} | Provisions {2} | Inspiration {3}```"\
@@ -352,7 +352,7 @@ async def help(message):
     helpStr += command_names.APP_HERO + \
         ': Shows the rating of the hero compared to others. Set detailed to True to see detailed stats \n'
     helpStr += command_names.APP_HERO_INFOGRAPHIC + \
-        ": Displays Milo's infographic for a selected hero\n"
+        ": Display Milo's infographic for a selected hero\n"
     helpStr += command_names.APP_FORMULAS + \
         ': Pulls up a formula sheet with a bunch of useful formulas such as KP, power etc.'
     helpStr += command_names.APP_ZODIACS + \

@@ -3,7 +3,7 @@ import os
 # Application command list
 APP_EVENT_SCHEDULE = '/event_schedule'
 APP_HERO = '/hero'
-APP_HERO_INFOGRAPHIC = '/hero_inforgraphic'
+APP_HERO_INFOGRAPHIC = '/hero_infographic'
 APP_GROWTH_TIER_LIST = '/growth_tier_list'
 APP_ATTRIBUTE_TIER_LIST = '/attribute_tier_list'
 APP_TOURNEY_FARM = '/tourney_farm'
