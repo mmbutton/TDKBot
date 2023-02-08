@@ -9,7 +9,7 @@ APP_ATTRIBUTE_TIER_LIST = '/attribute_tier_list'
 APP_TOURNEY_FARM = '/tourney_farm'
 APP_FORMULAS = '/formulas'
 APP_ZODIACS = '/zodiacs'
-APP_CASTLE_SKINS = '!castle_skins'
+APP_CASTLE_SKINS = '/castle_skins'
 APP_MANU_EFFICIENCY = '/manuscript_efficiency'
 
 # Old Command list. Deprecated on most servers

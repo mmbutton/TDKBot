@@ -46,7 +46,7 @@ async def help(interaction):
     helpStr += command_names.APP_HERO_INFOGRAPHIC + \
         ": Displays Milo's infographic for a selected hero\n"
     helpStr += command_names.APP_FORMULAS + \
-        ': Pulls up a formula sheet with a bunch of useful formulas such as KP, power etc.'
+        ': Pulls up a formula sheet with a bunch of useful formulas such as KP, power etc.\n'
     helpStr += command_names.APP_ZODIACS + \
         ': Pulls up a screenshot showing Zodiacs, their maidens and their paragons.\n'
     helpStr += command_names.APP_CASTLE_SKINS + \
