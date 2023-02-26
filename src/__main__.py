@@ -171,7 +171,7 @@ class TierListGrowths(enum.Enum):
     
 @client.tree.command(description = "Generate a tier list based on growth of heroes")
 @app_commands.describe(type="Type of tier list to generate", size="Size of the tier list")
-async def growth_tier_list(interaction, type: hero_collection.TierList, size: app_commands.Range[int, 0, 200] = 10):
+async def growth_tier_list(interaction, type: TierListGrowths, size: app_commands.Range[int, 0, 200] = 10):
     tier_list = hero_collection.create_growth_tier_list(type, 100, size)
     tier_list_str = "**{0} Growth Tier List**\n".format(type.value)
 
@@ -189,10 +189,6 @@ async def growth_tier_list(interaction, type: hero_collection.TierList, size: ap
         elif type is hero_collection.TierList.INSPIRATION:
             attribute = hero.max_inspiration
             growth = hero.inspiration_growth
-        elif type is hero_collection.TierList.KINGDOM_POWER:
-            attribute = hero.max_kp
-        elif type is hero_collection.TierList.MILITARY_POWER:
-            attribute = hero.max_power
         tier_list_str += "{0}. {1} ({2}%, {3})\n".format(rank, hero.hero_name, round(growth), command.format_big_number(attribute))
         rank += 1
 
