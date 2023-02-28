@@ -161,32 +161,25 @@ async def attribute_tier_list(interaction, type: hero_collection.TierList, size:
         rank += 1
 
     await interaction.response.send_message(tier_list_str + "\n" + command._LONG_BOT_MSG)
-
-class TierListGrowths(enum.Enum):
-    MILITARY = hero_collection.TierList.MILITARY
-    FORTUNE = hero_collection.TierList.FORTUNE
-    PROVISIONS = hero_collection.TierList.PROVISIONS
-    INSPIRATION = hero_collection.TierList.INSPIRATION
-    
     
 @client.tree.command(description = "Generate a tier list based on growth of heroes")
 @app_commands.describe(type="Type of tier list to generate", size="Size of the tier list")
-async def growth_tier_list(interaction, type: TierListGrowths, size: app_commands.Range[int, 0, 200] = 10):
+async def growth_tier_list(interaction, type: hero_collection.GrowthTierList, size: app_commands.Range[int, 0, 200] = 10):
     tier_list = hero_collection.create_growth_tier_list(type, 100, size)
     tier_list_str = "**{0} Growth Tier List**\n".format(type.value)
 
     rank = 1
     for hero in tier_list:
-        if type is hero_collection.TierList.MILITARY:
+        if type is hero_collection.GrowthTierList.MILITARY:
             attribute = hero.max_military
             growth = hero.military_growth
-        elif type is hero_collection.TierList.FORTUNE:
+        elif type is hero_collection.GrowthTierList.FORTUNE:
             attribute = hero.max_fortune
             growth = hero.fortune_growth
-        elif type is hero_collection.TierList.PROVISIONS:
+        elif type is hero_collection.GrowthTierList.PROVISIONS:
             attribute = hero.max_provisions
             growth = hero.provisions_growth
-        elif type is hero_collection.TierList.INSPIRATION:
+        elif type is hero_collection.GrowthTierList.INSPIRATION:
             attribute = hero.max_inspiration
             growth = hero.inspiration_growth
         tier_list_str += "{0}. {1} ({2}%, {3})\n".format(rank, hero.hero_name, round(growth), command.format_big_number(attribute))

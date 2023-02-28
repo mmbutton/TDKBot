@@ -9,6 +9,12 @@ class TierList(enum.Enum):
     INSPIRATION = 'Inspiration'
     KINGDOM_POWER = 'Kingdom Power'
     MILITARY_POWER = 'Military Power'
+    
+class GrowthTierList(enum.Enum):
+    MILITARY = 'Military'
+    FORTUNE = 'Fortune'
+    PROVISIONS = 'Provisions'
+    INSPIRATION = 'Inspiration'
 
 
 _heros = hero_util.get_all_heros_from_api()
@@ -29,15 +35,15 @@ def create_attributes_tier_list(type: TierList, difficulty, cutoff):
         filtered_heros = sorted(filtered_heros, key=lambda k: (k.max_power), reverse=True)
     return filtered_heros[:cutoff]
 
-def create_growth_tier_list(type: TierList, difficulty, cutoff):
+def create_growth_tier_list(type: GrowthTierList, difficulty, cutoff):
     filtered_heros = filter(lambda k: (k.difficulty < difficulty), _heros)
-    if type is TierList.MILITARY:
+    if type is GrowthTierList.MILITARY:
         filtered_heros = sorted(filtered_heros, key=lambda k: (k.military_growth, k.max_military), reverse=True)
-    elif type is TierList.FORTUNE:
+    elif type is GrowthTierList.FORTUNE:
         filtered_heros = sorted(filtered_heros, key=lambda k: (k.fortune_growth, k.max_fortune), reverse=True)
-    elif type is TierList.PROVISIONS:
+    elif type is GrowthTierList.PROVISIONS:
         filtered_heros = sorted(filtered_heros, key=lambda k: (k.provisions_growth, k.max_provisions), reverse=True)
-    elif type is TierList.INSPIRATION:
+    elif type is GrowthTierList.INSPIRATION:
         filtered_heros = sorted(filtered_heros, key=lambda k: (k.inspiration_growth, k.max_inspiration), reverse=True)
     return filtered_heros[:cutoff]
 
