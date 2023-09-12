@@ -10,10 +10,10 @@ import enum
 import discord
 from discord import app_commands
 import schedule
-from dotenv import main
+from dotenv import load_dotenv
 
 # Dotenv must read the files before imports otherwise the .env variables will be None
-main.load_dotenv()
+load_dotenv()
 from command import command_names, command
 from command.coffee_client import CoffeeClient
 from hero import hero_collection
