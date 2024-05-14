@@ -352,7 +352,7 @@ async def help(message):
     helpStr += command_names.APP_HERO + \
         ': Shows the rating of the hero compared to others. Set detailed to True to see detailed stats \n'
     helpStr += command_names.APP_HERO_INFOGRAPHIC + \
-        ": Display Milo's infographic for a selected hero\n"
+        ": Display Milo's or Deadpool♾825's infographic for a selected hero\n"
     helpStr += command_names.APP_FORMULAS + \
         ': Pulls up a formula sheet with a bunch of useful formulas such as KP, power etc.\n'
     helpStr += command_names.APP_ZODIACS + \
