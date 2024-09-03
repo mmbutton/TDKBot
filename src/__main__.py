@@ -550,7 +550,7 @@ def boss_notifier():
             int(os.getenv("GENERAL_CHAT")),
             "<@&"
             + os.getenv("BL_ALERTS")
-            + "> Bosses will be opened shortly. Please limit your hits to 30B power (ie: 15k points)",
+            + "> Bosses will be opened shortly. Please limit your hits to 24B power (ie: 12k points)",
         ),
         client.loop,
     )
